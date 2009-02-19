@@ -4,17 +4,19 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+/* FIXME remove MPI error code references in a meaningful way */
+
 #include "opa_queue.h"
 
 char *OPA_Shm_asymm_base_addr = (char *)(OPA_SHM_ASYMM_NULL_VAL);
 
 int OPA_Shm_asymm_init(char *base)
 {
-    int mpi_errno = MPI_SUCCESS;
+    int mpi_errno = 0/*MPI_SUCCESS*/;
 
     if (OPA_Shm_asymm_base_addr != (char *)OPA_SHM_ASYMM_NULL_VAL) {
         /* the _base_addr has already been initialized */
-        mpi_errno = MPI_ERR_INTERN;
+        mpi_errno = 16/*MPI_ERR_INTERN*/;
         goto fn_exit;
     }
 

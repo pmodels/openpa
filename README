@@ -6,5 +6,12 @@ TODO write some more content.
 - give brief overview of project
 - point to website and bug tracking
 - explain how to build
+
+% automake --add-missing
+% autoreconf
+% ./configure [configure_args]
+% make
+% make install
+
 - mention known issues and supported platforms (in a different file?)
 

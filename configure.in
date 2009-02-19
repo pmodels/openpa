@@ -1,0 +1,24 @@
+# FIXME add copyright
+
+# FIXME what do we do about windows?  Do we require autotools?  MPICH2 doesn't
+# currently require this...
+
+AC_INIT([OpenPA], [0.0.1], [https://trac.mcs.anl.gov/projects/openpa/newticket])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
+AC_PROG_CC
+AC_PROG_RANLIB
+
+AC_HEADER_ASSERT
+# do we need intrin.h in here since it's a windows file?
+AC_CHECK_HEADERS([pthread.h atomic.h intrin.h])
+
+AC_C_RESTRICT
+AC_C_INLINE
+
+# FIXME need to add checks for which particular platform we are on (what type of assembly is supported) 
+
+AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_FILES([Makefile src/Makefile])
+AC_OUTPUT
+

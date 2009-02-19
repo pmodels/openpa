@@ -7,8 +7,7 @@
 #ifndef OPA_QUEUE_H_INCLUDED
 #define OPA_QUEUE_H_INCLUDED
 
-#include "mpi.h"
-#include "mpidu_atomic_primitives.h"
+#include "opa_primitives.h"
 #ifdef HAVE_STDDEF_H
 #include <stddef.h>
 #endif /* HAVE_STDDEF_H */
@@ -34,10 +33,10 @@ int OPA_Shm_asymm_init(char *base);
 /* Relative addressing macros.  These are for manipulating addresses relative
    to the start of a shared memory region. */
 #define OPA_SHM_REL_NULL (0x0)
-#define OPA_SHM_IS_REL_NULL(rel_ptr) (OPA_Atomic_load_ptr(&(rel_ptr).offset) == OPA_SHM_REL_NULL)
-#define OPA_SHM_SET_REL_NULL(rel_ptr) (OPA_Atomic_store_ptr(&(rel_ptr).offset, OPA_SHM_REL_NULL))
+#define OPA_SHM_IS_REL_NULL(rel_ptr) (OPA_load_ptr(&(rel_ptr).offset) == OPA_SHM_REL_NULL)
+#define OPA_SHM_SET_REL_NULL(rel_ptr) (OPA_store_ptr(&(rel_ptr).offset, OPA_SHM_REL_NULL))
 #define OPA_SHM_REL_ARE_EQUAL(rel_ptr1, rel_ptr2) \
-    (OPA_Atomic_load(&(rel_ptr1).offset) == OPA_Atomic_load(&(rel_ptr2).offset))
+    (OPA_load(&(rel_ptr1).offset) == OPA_load(&(rel_ptr2).offset))
 
 /* This structure exists such that it is possible to expand the expressiveness
    of a relative address at some point in the future.  It also provides a
@@ -54,15 +53,15 @@ int OPA_Shm_asymm_init(char *base);
    requirement that relative addresses can only be swapped within the same
    segment.  */
 typedef struct OPA_Shm_rel_addr_t {
-    OPA_Atomic_ptr_t offset;
+    OPA_ptr_t offset;
 } OPA_Shm_rel_addr_t;
 
 /* converts a relative pointer to an absolute pointer */
 static inline
 void *OPA_Shm_rel_to_abs(OPA_Shm_rel_addr_t r)
 {
-    void *offset = OPA_Atomic_load_ptr(&r.offset);
-    OPA_Atomic_assert((size_t)OPA_Shm_asymm_base_addr != OPA_SHM_ASYMM_NULL_VAL);
+    void *offset = OPA_load_ptr(&r.offset);
+    OPA_assert((size_t)OPA_Shm_asymm_base_addr != OPA_SHM_ASYMM_NULL_VAL);
     return (void*)(OPA_Shm_asymm_base_addr + (size_t)offset);
 }
 
@@ -72,15 +71,15 @@ OPA_Shm_rel_addr_t OPA_Shm_abs_to_rel(void *a)
 {
     OPA_Shm_rel_addr_t ret;
 
-    OPA_Atomic_assert((size_t)OPA_Shm_asymm_base_addr != OPA_SHM_ASYMM_NULL_VAL);
-    OPA_Atomic_store_ptr(&ret.offset, (void*)((size_t)a - (size_t)OPA_Shm_asymm_base_addr));
+    OPA_assert((size_t)OPA_Shm_asymm_base_addr != OPA_SHM_ASYMM_NULL_VAL);
+    OPA_store_ptr(&ret.offset, (void*)((size_t)a - (size_t)OPA_Shm_asymm_base_addr));
     return ret;
 }
 
 static inline
 OPA_Shm_rel_addr_t OPA_Shm_swap_rel(OPA_Shm_rel_addr_t *addr, OPA_Shm_rel_addr_t newv) {
     OPA_Shm_rel_addr_t oldv;
-    OPA_Atomic_store_ptr(&oldv.offset, OPA_Atomic_swap_ptr(&addr->offset, OPA_Atomic_load_ptr(&newv.offset)));
+    OPA_store_ptr(&oldv.offset, OPA_swap_ptr(&addr->offset, OPA_load_ptr(&newv.offset)));
     return oldv;
 }
 
@@ -90,7 +89,7 @@ OPA_Shm_rel_addr_t OPA_Shm_swap_rel(OPA_Shm_rel_addr_t *addr, OPA_Shm_rel_addr_t
 static inline
 OPA_Shm_rel_addr_t OPA_Shm_cas_rel_null(OPA_Shm_rel_addr_t *addr, OPA_Shm_rel_addr_t oldv) {
     OPA_Shm_rel_addr_t prev;
-    OPA_Atomic_store_ptr(&prev.offset, OPA_Atomic_cas_ptr(&(addr->offset), OPA_Atomic_load_ptr(&oldv.offset), (void*)OPA_SHM_REL_NULL));
+    OPA_store_ptr(&prev.offset, OPA_cas_ptr(&(addr->offset), OPA_load_ptr(&oldv.offset), (void*)OPA_SHM_REL_NULL));
     return prev;
 }
 
@@ -192,7 +191,7 @@ int OPA_Queue_is_empty(OPA_Queue_info_t *qhead)
 static inline
 volatile void *OPA_Queue_peek_head(OPA_Queue_info_t *qhead_ptr)
 {
-    OPA_Atomic_assert(qhead_ptr != NULL);
+    OPA_assert(qhead_ptr != NULL);
 
     if (OPA_SHM_IS_REL_NULL(qhead_ptr->shadow_head)) {
         return NULL;
@@ -271,7 +270,7 @@ do {                                                                          \
                                                                               \
         if (!OPA_SHM_REL_ARE_EQUAL(old_tail, _r_e)) {                         \
             while (OPA_SHM_IS_REL_NULL(_e->elt_hdr_field.next)) {             \
-                OPA_Atomic_busy_wait();                                       \
+                OPA_busy_wait();                                       \
             }                                                                 \
             (qhead_ptr)->shadow_head = _e->elt_hdr_field.next;                \
         }                                                                     \
