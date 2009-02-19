@@ -4,7 +4,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-/* FIXME needs to be converted to new style functions with OPA_t/OPA_ptr_t-types */
+/* FIXME needs to be converted to new style functions with OPA_int_t/OPA_ptr_t-types */
 #ifndef OPA_GCC_INTRINSICS_H_INCLUDED
 #define OPA_GCC_INTRINSICS_H_INCLUDED
 

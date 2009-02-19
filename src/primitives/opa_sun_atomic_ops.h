@@ -4,7 +4,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-/* FIXME needs to be converted to the new OPA_t-style of functions */
+/* FIXME needs to be converted to the new OPA_int_t-style of functions */
 
 #ifndef OPA_SUN_ATOMIC_OPS_H_INCLUDED
 #define OPA_SUN_ATOMIC_OPS_H_INCLUDED

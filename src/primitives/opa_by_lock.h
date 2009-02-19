@@ -28,7 +28,7 @@ pthread_mutex_t *OPA_emulation_lock;
         pthread_mutex_unlock(OPA_emulation_lock);   \
     } while (0)
 
-typedef struct { volatile int v;  } OPA_t;
+typedef struct { volatile int v;  } OPA_int_t;
 typedef struct { int * volatile v; } OPA_ptr_t;
 
 /*
@@ -52,7 +52,7 @@ typedef struct { int * volatile v; } OPA_ptr_t;
    primitives including CAS. */
 #define MPIDU_ATOMIC_UNIVERSAL_PRIMITIVE MPIDU_ATOMIC_CAS
 
-static inline int OPA_load(OPA_t *ptr)
+static inline int OPA_load(OPA_int_t *ptr)
 {
     int retval;
     OPA_IPC_SINGLE_CS_ENTER("atomic_add");
@@ -61,7 +61,7 @@ static inline int OPA_load(OPA_t *ptr)
     return retval;
 }
 
-static inline void OPA_store(OPA_t *ptr, int val)
+static inline void OPA_store(OPA_int_t *ptr, int val)
 {
     OPA_IPC_SINGLE_CS_ENTER("atomic_add");
     ptr->v = val;
@@ -85,7 +85,7 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 }
 
 
-static inline void OPA_add(OPA_t *ptr, int val)
+static inline void OPA_add(OPA_int_t *ptr, int val)
 {
     OPA_IPC_SINGLE_CS_ENTER("atomic_add");
     ptr->v += val;
@@ -104,7 +104,7 @@ static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, int *oldv, int *newv)
     return prev;
 }
 
-static inline int OPA_cas_int(OPA_t *ptr, int oldv, int newv)
+static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
     int prev;
     OPA_IPC_SINGLE_CS_ENTER("atomic_cas");
@@ -116,7 +116,7 @@ static inline int OPA_cas_int(OPA_t *ptr, int oldv, int newv)
     return prev;
 }
 
-static inline int OPA_decr_and_test(OPA_t *ptr)
+static inline int OPA_decr_and_test(OPA_int_t *ptr)
 {
     int new_val;
     OPA_IPC_SINGLE_CS_ENTER("atomic_decr_and_test");
@@ -125,14 +125,14 @@ static inline int OPA_decr_and_test(OPA_t *ptr)
     return (0 == new_val);
 }
 
-static inline void OPA_decr(OPA_t *ptr)
+static inline void OPA_decr(OPA_int_t *ptr)
 {
     OPA_IPC_SINGLE_CS_ENTER("atomic_decr");
     --(ptr->v);
     OPA_IPC_SINGLE_CS_EXIT("atomic_decr");
 }
 
-static inline int OPA_fetch_and_add(OPA_t *ptr, int val)
+static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
     int prev;
     OPA_IPC_SINGLE_CS_ENTER("atomic_fetch_and_add");
@@ -142,7 +142,7 @@ static inline int OPA_fetch_and_add(OPA_t *ptr, int val)
     return prev;
 }
 
-static inline int OPA_fetch_and_decr(OPA_t *ptr)
+static inline int OPA_fetch_and_decr(OPA_int_t *ptr)
 {
     int prev;
     OPA_IPC_SINGLE_CS_ENTER("atomic_fetch_and_decr");
@@ -152,7 +152,7 @@ static inline int OPA_fetch_and_decr(OPA_t *ptr)
     return prev;
 }
 
-static inline int OPA_fetch_and_incr(OPA_t *ptr)
+static inline int OPA_fetch_and_incr(OPA_int_t *ptr)
 {
     int prev;
     OPA_IPC_SINGLE_CS_ENTER("atomic_fetch_and_incr");
@@ -162,7 +162,7 @@ static inline int OPA_fetch_and_incr(OPA_t *ptr)
     return prev;
 }
 
-static inline void OPA_incr(OPA_t *ptr)
+static inline void OPA_incr(OPA_int_t *ptr)
 {
     OPA_IPC_SINGLE_CS_ENTER("atomic_incr");
     ++(ptr->v);
@@ -179,7 +179,7 @@ static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
     return prev;
 }
 
-static inline int OPA_swap_int(OPA_t *ptr, int val)
+static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 {
     int prev;
     OPA_IPC_SINGLE_CS_ENTER("atomic_swap_int");

@@ -32,11 +32,11 @@
    Primitive atomic functions
    --------------------------
 
-   The included file is responsible for defining the types of OPA_t and
+   The included file is responsible for defining the types of OPA_int_t and
    OPA_ptr_t as well as a set of functions for operating on these
    types.  If you have the following declaration:
 
-       OPA_t atomic_var;
+       OPA_int_t atomic_var;
 
    Then in order for the emulation functions compile the underlying value of
    atomic_var should be accessible via:
@@ -47,25 +47,25 @@
    
    The atomic functions that must be ported for each architecture: 
 
-   static inline int   OPA_load(OPA_t *ptr);
-   static inline void  OPA_store(OPA_t *ptr, int val);
-   static inline void *OPA_load_ptr(OPA_t *ptr);
-   static inline void  OPA_store_ptr(OPA_t *ptr, void *val);
+   static inline int   OPA_load(OPA_int_t *ptr);
+   static inline void  OPA_store(OPA_int_t *ptr, int val);
+   static inline void *OPA_load_ptr(OPA_int_t *ptr);
+   static inline void  OPA_store_ptr(OPA_int_t *ptr, void *val);
 
-   static inline void OPA_add(OPA_t *ptr, int val);
-   static inline void OPA_incr(OPA_t *ptr);
-   static inline void OPA_decr(OPA_t *ptr);
+   static inline void OPA_add(OPA_int_t *ptr, int val);
+   static inline void OPA_incr(OPA_int_t *ptr);
+   static inline void OPA_decr(OPA_int_t *ptr);
    
-   static inline int OPA_decr_and_test(OPA_t *ptr);
-   static inline int OPA_fetch_and_add(OPA_t *ptr, int val);
-   static inline int OPA_fetch_and_decr(OPA_t *ptr);
-   static inline int OPA_fetch_and_incr(OPA_t *ptr);
+   static inline int OPA_decr_and_test(OPA_int_t *ptr);
+   static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val);
+   static inline int OPA_fetch_and_decr(OPA_int_t *ptr);
+   static inline int OPA_fetch_and_incr(OPA_int_t *ptr);
    
    static inline int *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv);
-   static inline int  OPA_cas_int(OPA_t *ptr, int oldv, int newv);
+   static inline int  OPA_cas_int(OPA_int_t *ptr, int oldv, int newv);
    
    static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val);
-   static inline int  OPA_swap_int(OPA_t *ptr, int val);
+   static inline int  OPA_swap_int(OPA_int_t *ptr, int val);
    
    
    The following need to be ported only for architectures supporting LL/SC:

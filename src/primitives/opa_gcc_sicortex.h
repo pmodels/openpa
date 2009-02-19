@@ -13,7 +13,7 @@
 
 #define OPA_UNIVERSAL_PRIMITIVE OPA_LL_SC
 
-typedef struct { volatile int v;  } OPA_t;
+typedef struct { volatile int v;  } OPA_int_t;
 typedef struct { int * volatile v; } OPA_ptr_t;
 
 #include <stdint.h>
@@ -314,7 +314,7 @@ static __inline__ long int shmemi_cswap_8(volatile long int * v, long int expect
 #endif
 
 
-static __inline__ void OPA_add(OPA_t *ptr, int val)
+static __inline__ void OPA_add(OPA_int_t *ptr, int val)
 {
     shmemi_fetch_add_4(ptr, val);
 }
@@ -328,39 +328,39 @@ static __inline__ void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 #endif
 }
 
-static __inline__ int OPA_cas_int(OPA_t *ptr, int oldv, int newv)
+static __inline__ int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
     return(shmemi_cswap_4(&ptr->v, oldv, newv));
 }
 
-static __inline__ void OPA_decr(OPA_t *ptr)
+static __inline__ void OPA_decr(OPA_int_t *ptr)
 {
     shmemi_fetch_add_4(&ptr->v, -1);
 }
 
 
-static __inline__ int OPA_decr_and_test(OPA_t *ptr)
+static __inline__ int OPA_decr_and_test(OPA_int_t *ptr)
 {
     int old = shmemi_fetch_add_4(&ptr->v, -1);
     return (old == 1);
 }
 
-static __inline__ int OPA_fetch_and_add(OPA_t *ptr, int val)
+static __inline__ int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
     return(shmemi_fetch_add(&ptr->v, val));
 }
 
-static __inline__ int OPA_fetch_and_decr(OPA_t *ptr)
+static __inline__ int OPA_fetch_and_decr(OPA_int_t *ptr)
 {
     return(shmemi_fetch_add_4(&ptr->v, -1));
 }
 
-static __inline__ int OPA_fetch_and_incr(OPA_t *ptr)
+static __inline__ int OPA_fetch_and_incr(OPA_int_t *ptr)
 {
     return(shmemi_fetch_add_4(&ptr->v, 1));
 }
 
-static __inline__ void OPA_incr(OPA_t *ptr)
+static __inline__ void OPA_incr(OPA_int_t *ptr)
 {
     shmemi_fetch_add_4(&ptr->v, 1);
 }
@@ -374,7 +374,7 @@ static __inline__ int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val)
 #endif
 }
 
-static __inline__ int OPA_swap_int(OPA_t *ptr, int val)
+static __inline__ int OPA_swap_int(OPA_int_t *ptr, int val)
 {
     return(shmemi_swap_4(&ptr->v, val));
 }

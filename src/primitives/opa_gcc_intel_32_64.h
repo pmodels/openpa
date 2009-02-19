@@ -10,17 +10,17 @@
 #define MPIDU_ATOMIC_UNIVERSAL_PRIMITIVE MPIDU_ATOMIC_CAS
 
 /* XXX DJG FIXME do we need to align these? */
-typedef struct { volatile int v;  } OPA_t;
+typedef struct { volatile int v;  } OPA_int_t;
 typedef struct { int * volatile v; } OPA_ptr_t;
 
 /* Aligned loads and stores are atomic on x86(-64). */
-static inline int OPA_load(OPA_t *ptr)
+static inline int OPA_load(OPA_int_t *ptr)
 {
     return ptr->v;
 }
 
 /* Aligned loads and stores are atomic on x86(-64). */
-static inline void OPA_store(OPA_t *ptr, int val)
+static inline void OPA_store(OPA_int_t *ptr, int val)
 {
     ptr->v = val;
 }
@@ -37,14 +37,14 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
     ptr->v = val;
 }
 
-static inline void OPA_add(OPA_t *ptr, int val)
+static inline void OPA_add(OPA_int_t *ptr, int val)
 {
     __asm__ __volatile__ ("lock ; add %1,%0"
                           :"=m" (ptr->v)
                           :"ir" (val), "m" (ptr->v));
 }
 
-static inline void OPA_incr(OPA_t *ptr)
+static inline void OPA_incr(OPA_int_t *ptr)
 {
     switch(sizeof(ptr->v))
     {
@@ -65,7 +65,7 @@ static inline void OPA_incr(OPA_t *ptr)
     return;
 }
 
-static inline void OPA_decr(OPA_t *ptr)
+static inline void OPA_decr(OPA_int_t *ptr)
 {
     switch(sizeof(ptr->v))
     {
@@ -87,7 +87,7 @@ static inline void OPA_decr(OPA_t *ptr)
 }
 
 
-static inline int OPA_decr_and_test(OPA_t *ptr)
+static inline int OPA_decr_and_test(OPA_int_t *ptr)
 {
     int result;
     switch(sizeof(ptr->v))
@@ -109,7 +109,7 @@ static inline int OPA_decr_and_test(OPA_t *ptr)
     return result;
 }
 
-static inline int OPA_fetch_and_add(OPA_t *ptr, int val)
+static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
     __asm__ __volatile__ ("lock ; xadd %0,%1"
                           : "=r" (val), "=m" (ptr->v)
@@ -130,7 +130,7 @@ static inline int *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
     return prev;
 }
 
-static inline int OPA_cas_int(OPA_t *ptr, int oldv, int newv)
+static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
     int prev;
     __asm__ __volatile__ ("lock ; cmpxchg %2,%3"
@@ -148,7 +148,7 @@ static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
     return val;
 }
 
-static inline int OPA_swap_int(OPA_t *ptr, int val)
+static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 {
     __asm__ __volatile__ ("xchg %0,%1"
                           :"=r" (val), "=m" (ptr->v)

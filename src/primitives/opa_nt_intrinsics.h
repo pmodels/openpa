@@ -4,7 +4,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-/* FIXME needs to be converted to the new OPA_t-style of functions */
+/* FIXME needs to be converted to the new OPA_int_t-style of functions */
 
 #ifndef OPA_NT_INTRINSICS_H_INCLUDED
 #define OPA_NT_INTRINSICS_H_INCLUDED
@@ -12,15 +12,15 @@
 #include<intrin.h>
 #include "mpi.h"
 
-typedef struct { volatile int v;  } OPA_t;
+typedef struct { volatile int v;  } OPA_int_t;
 typedef struct { int * volatile v; } OPA_ptr_t;
 
-static inline int OPA_load(OPA_t *ptr)
+static inline int OPA_load(OPA_int_t *ptr)
 {
     return ptr->v;
 }
 
-static inline void OPA_store(OPA_t *ptr, int val)
+static inline void OPA_store(OPA_int_t *ptr, int val)
 {
     ptr->v = val;
 }

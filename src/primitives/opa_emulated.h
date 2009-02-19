@@ -14,7 +14,7 @@
    another atomic.
 */
 
-static inline int OPA_fetch_and_add_by_cas(OPA_t *ptr, int val)
+static inline int OPA_fetch_and_add_by_cas(OPA_int_t *ptr, int val)
 {
     int cmp;
     int prev = OPA_load(ptr);
@@ -28,32 +28,32 @@ static inline int OPA_fetch_and_add_by_cas(OPA_t *ptr, int val)
 }
 
 
-static inline int OPA_fetch_and_incr_by_faa(OPA_t *ptr)
+static inline int OPA_fetch_and_incr_by_faa(OPA_int_t *ptr)
 {
     return OPA_fetch_and_add(ptr, 1);
 }
 
-static inline int OPA_fetch_and_decr_by_faa(OPA_t *ptr)
+static inline int OPA_fetch_and_decr_by_faa(OPA_int_t *ptr)
 {
     return OPA_fetch_and_add(ptr, -1);
 }
 
-static inline int OPA_decr_and_test_by_fad(OPA_t *ptr)
+static inline int OPA_decr_and_test_by_fad(OPA_int_t *ptr)
 {
     return OPA_fetch_and_decr(ptr) == 1;
 }
 
-static inline void OPA_add_by_faa(OPA_t *ptr, int val)
+static inline void OPA_add_by_faa(OPA_int_t *ptr, int val)
 {
     OPA_fetch_and_add(ptr, val);
 }
 
-static inline void OPA_incr_by_fai(OPA_t *ptr)
+static inline void OPA_incr_by_fai(OPA_int_t *ptr)
 {
     OPA_fetch_and_incr(ptr);
 }
 
-static inline void OPA_decr_by_fad(OPA_t *ptr)
+static inline void OPA_decr_by_fad(OPA_int_t *ptr)
 {
     OPA_fetch_and_decr(ptr);
 }
@@ -74,7 +74,7 @@ static inline int *OPA_swap_ptr_by_cas(OPA_ptr_t *ptr, int *val)
     return prev;
 }
 
-static inline int OPA_swap_int_by_cas(OPA_t *ptr, int val)
+static inline int OPA_swap_int_by_cas(OPA_int_t *ptr, int val)
 {
     int cmp;
     int prev = OPA_load(ptr);
@@ -91,7 +91,7 @@ static inline int OPA_swap_int_by_cas(OPA_t *ptr, int val)
 /* Emulating using LL/SC */
 
 #ifdef ATOMIC_LL_SC_SUPPORTED
-static inline int OPA_fetch_and_add_by_llsc(OPA_t *ptr, int val)
+static inline int OPA_fetch_and_add_by_llsc(OPA_int_t *ptr, int val)
 {
     int prev;
     do {
@@ -106,28 +106,28 @@ static inline void OPA_add_by_llsc(int *ptr, int val)
     OPA_fetch_and_add_by_llsc(ptr, val);
 }
 
-static inline void OPA_incr_by_llsc(OPA_t *ptr)
+static inline void OPA_incr_by_llsc(OPA_int_t *ptr)
 {
     OPA_add_by_llsc(ptr, 1);
 }
 
-static inline void OPA_decr_by_llsc(OPA_t *ptr)
+static inline void OPA_decr_by_llsc(OPA_int_t *ptr)
 {
     OPA_add_by_llsc(ptr, -1);
 }
 
 
-static inline int OPA_fetch_and_decr_by_llsc(OPA_t *ptr)
+static inline int OPA_fetch_and_decr_by_llsc(OPA_int_t *ptr)
 {
     return OPA_fetch_and_add_by_llsc(ptr, -1);
 }
 
-static inline int OPA_fetch_and_incr_by_llsc(OPA_t *ptr)
+static inline int OPA_fetch_and_incr_by_llsc(OPA_int_t *ptr)
 {
     return OPA_fetch_and_add_by_llsc(ptr, 1);
 }
 
-static inline int OPA_decr_and_test_by_llsc(OPA_t *ptr)
+static inline int OPA_decr_and_test_by_llsc(OPA_int_t *ptr)
 {
     int prev = OPA_fetch_and_decr_by_llsc(ptr);
     return prev == 1;
@@ -142,7 +142,7 @@ static inline int *OPA_cas_ptr_by_llsc(OPA_ptr_t *ptr, int *oldv, int *newv)
     return prev;
 }
 
-static inline int OPA_cas_int_by_llsc(OPA_t *ptr, int oldv, int newv)
+static inline int OPA_cas_int_by_llsc(OPA_int_t *ptr, int oldv, int newv)
 {
     int prev;
     do {
@@ -161,7 +161,7 @@ static inline int *OPA_swap_ptr_by_llsc(int * volatile *ptr, int *val)
     return prev;
 }
 
-static inline int OPA_swap_int_by_llsc(OPA_t *ptr, int val)
+static inline int OPA_swap_int_by_llsc(OPA_int_t *ptr, int val)
 {
     int prev;
     do {
