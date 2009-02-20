@@ -1,10 +1,28 @@
-# FIXME add copyright
+# -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*-
+#  
+#  (C) 2008 by Argonne National Laboratory.
+#      See COPYRIGHT in top-level directory.
+# 
 
 # FIXME what do we do about windows?  Do we require autotools?  MPICH2 doesn't
 # currently require this...
 
 AC_INIT([OpenPA], [0.0.1], [https://trac.mcs.anl.gov/projects/openpa/newticket])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
+# FIXME this header needs to end up in the installation include directory in some form,
+# so we probably need to change its name to something that won't collide in the
+# global namespace. [goodell@ 2009-02-19]
+AC_CONFIG_HEADER([src/config.h])
+AH_TOP([/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
+/*  
+ *  (C) 2008 by Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
+#ifndef MPIDI_CH3I_NEMESIS_CONF_H_INCLUDED
+#define MPIDI_CH3I_NEMESIS_CONF_H_INCLUDED
+])
+AH_BOTTOM([#endif])
 
 AC_PROG_CC
 AC_PROG_RANLIB
@@ -18,7 +36,55 @@ AC_C_INLINE
 
 # FIXME need to add checks for which particular platform we are on (what type of assembly is supported) 
 
-AC_CONFIG_HEADERS([src/config.h])
+# FIXME these tests are not cross-compile safe (it involves an AC_TRY_RUN)
+# Check for special compile characteristics
+# If we are either gcc or icc, see if we can use __asm__
+# We test on prog_gcc to allow gcc by any name; if we are using
+# icc, the value of CC must be icc for this test to pass
+if test "$ac_cv_prog_gcc" = "yes" -o "$ac_cv_prog_CC" = "icc" ; then
+AC_MSG_CHECKING([for gcc __asm__ and pentium cmpxchgl instruction])
+AC_TRY_RUN([
+int main(int argc, char *argv[])
+{
+long int compval = 10;
+volatile long int *p = &compval;
+long int oldval = 10;
+long int newval = 20;
+char ret;
+long int readval;
+__asm__ __volatile__ ("lock; cmpxchgl %3, %1; sete %0"
+	: "=q" (ret), "=m" (*p), "=a" (readval)
+	: "r" (newval), "m" (*p), "a" (oldval) : "memory");
+return (compval == 20) ? 0 : -1;
+}
+], AC_MSG_RESULT(yes)
+   AC_DEFINE(HAVE_GCC_AND_PENTIUM_ASM, 1,[Define if using gcc on a system with an Intel Pentium class chip])
+   lac_cv_use_atomic_updates="yes", 
+AC_MSG_RESULT(no), AC_MSG_RESULT(not checking when cross compiling))
+fi
+
+# check for x86_64
+if test "$ac_cv_prog_gcc" = "yes" ; then
+AC_MSG_CHECKING([for gcc __asm__ and AMD x86_64 cmpxchgq instruction])
+AC_TRY_RUN([
+int main(int argc, char *argv[])
+{
+long int compval = 10;
+volatile long int *p = &compval;
+long int oldval = 10;
+long int newval = 20;
+char ret;
+long int readval;
+__asm__ __volatile__ ("lock; cmpxchgq %3, %1; sete %0"
+	: "=q" (ret), "=m" (*p), "=a" (readval)
+	: "r" (newval), "m" (*p), "a" (oldval) : "memory");
+return (compval == 20) ? 0 : -1;
+}
+], AC_MSG_RESULT(yes)
+   AC_DEFINE(HAVE_GCC_AND_X86_64_ASM, 1,[Define if using gcc on a system with an AMD x86_64 class chip]), 
+AC_MSG_RESULT(no), AC_MSG_RESULT(not checking when cross compiling))
+fi
+
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
 

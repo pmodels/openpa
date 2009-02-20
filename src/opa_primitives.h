@@ -1,6 +1,6 @@
-/* -*- Mode: C; c-basic-offset:4 ; -*- */
-/*
- *  (C) 2001 by Argonne National Laboratory.
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
+/*  
+ *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
 
@@ -80,9 +80,11 @@
      OPA_LL_SC
      OPA_NO_UNIVERSAL
 */
-#define OPA_NO_UNIVERSAL 0
-#define OPA_CAS          1
-#define OPA_LL_SC        2
+enum OPA_Universal_primitive_type {
+    OPA_NO_UNIVERSAL = 0,
+    OPA_CAS          = 1,
+    OPA_LL_SC        = 2
+};
 
 /* Include the appropriate header for the architecture */
 #if   defined(HAVE_GCC_AND_POWERPC_ASM)
