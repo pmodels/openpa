@@ -7,6 +7,8 @@
 # FIXME what do we do about windows?  Do we require autotools?  MPICH2 doesn't
 # currently require this...
 
+AC_PREREQ(2.62)
+
 AC_INIT([OpenPA], [0.0.1], [https://trac.mcs.anl.gov/projects/openpa/newticket])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
@@ -37,6 +39,7 @@ AC_C_INLINE
 # FIXME need to add checks for which particular platform we are on (what type of assembly is supported) 
 
 # FIXME these tests are not cross-compile safe (it involves an AC_TRY_RUN)
+############################################################
 # Check for special compile characteristics
 # If we are either gcc or icc, see if we can use __asm__
 # We test on prog_gcc to allow gcc by any name; if we are using
@@ -53,8 +56,8 @@ long int newval = 20;
 char ret;
 long int readval;
 __asm__ __volatile__ ("lock; cmpxchgl %3, %1; sete %0"
-	: "=q" (ret), "=m" (*p), "=a" (readval)
-	: "r" (newval), "m" (*p), "a" (oldval) : "memory");
+                      : "=q" (ret), "=m" (*p), "=a" (readval)
+                      : "r" (newval), "m" (*p), "a" (oldval) : "memory");
 return (compval == 20) ? 0 : -1;
 }
 ], AC_MSG_RESULT(yes)
@@ -63,6 +66,7 @@ return (compval == 20) ? 0 : -1;
 AC_MSG_RESULT(no), AC_MSG_RESULT(not checking when cross compiling))
 fi
 
+############################################################
 # check for x86_64
 if test "$ac_cv_prog_gcc" = "yes" ; then
 AC_MSG_CHECKING([for gcc __asm__ and AMD x86_64 cmpxchgq instruction])
@@ -76,14 +80,15 @@ long int newval = 20;
 char ret;
 long int readval;
 __asm__ __volatile__ ("lock; cmpxchgq %3, %1; sete %0"
-	: "=q" (ret), "=m" (*p), "=a" (readval)
-	: "r" (newval), "m" (*p), "a" (oldval) : "memory");
+                      : "=q" (ret), "=m" (*p), "=a" (readval)
+                      : "r" (newval), "m" (*p), "a" (oldval) : "memory");
 return (compval == 20) ? 0 : -1;
 }
 ], AC_MSG_RESULT(yes)
    AC_DEFINE(HAVE_GCC_AND_X86_64_ASM, 1,[Define if using gcc on a system with an AMD x86_64 class chip]), 
 AC_MSG_RESULT(no), AC_MSG_RESULT(not checking when cross compiling))
 fi
+############################################################
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
