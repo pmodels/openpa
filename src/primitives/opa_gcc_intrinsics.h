@@ -8,18 +8,45 @@
 #ifndef OPA_GCC_INTRINSICS_H_INCLUDED
 #define OPA_GCC_INTRINSICS_H_INCLUDED
 
+/* FIXME do we need to align these? */
+typedef struct { volatile int v;    } OPA_int_t;
+typedef struct { void * volatile v; } OPA_ptr_t;
+
+/* Assume that loads/stores are atomic on the current platform, even though this
+   may not be true at all. */
+static inline int OPA_load(OPA_int_t *ptr)
+{
+    return ptr->v;
+}
+
+static inline void OPA_store(OPA_int_t *ptr, int val)
+{
+    ptr->v = val;
+}
+
+static inline void *OPA_load_ptr(OPA_ptr_t *ptr)
+{
+    return ptr->v;
+}
+
+static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
+{
+    ptr->v = val;
+}
+
+
 /* gcc atomic intrinsics accept an optional list of variables to be
    protected by a memory barrier.  These variables are labeled
    below by "protected variables :". */
 
-static inline int OPA_fetch_and_add(volatile int *ptr, int val)
+static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
-    return __sync_fetch_and_add(ptr, val, /* protected variables: */ ptr);
+    return __sync_fetch_and_add(&ptr->v, val, /* protected variables: */ &ptr->v);
 }
 
-static inline int OPA_decr_and_test(volatile int *ptr)
+static inline int OPA_decr_and_test(OPA_int_t *ptr)
 {
-    return __sync_sub_and_fetch(ptr, 1, /* protected variables: */ ptr) == 0;
+    return __sync_sub_and_fetch(&ptr->v, 1, /* protected variables: */ &ptr->v) == 0;
 }
 
 #define OPA_fetch_and_incr_by_faa OPA_fetch_and_incr 
@@ -29,25 +56,25 @@ static inline int OPA_decr_and_test(volatile int *ptr)
 #define OPA_decr_by_fad OPA_decr 
 
 
-static inline int *OPA_cas_int_ptr(int * volatile *ptr, int *oldv, int *newv)
+static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
-    return __sync_val_compare_and_swap(ptr, oldv, newv, /* protected variables: */ ptr);
+    return __sync_val_compare_and_swap(&ptr->v, oldv, newv, /* protected variables: */ &ptr->v);
 }
 
-static inline int OPA_cas_int(volatile int *ptr, int oldv, int newv)
+static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
-    return __sync_val_compare_and_swap(ptr, oldv, newv, /* protected variables: */ ptr);
+    return __sync_val_compare_and_swap(&ptr->v, oldv, newv, /* protected variables: */ &ptr->v);
 }
 
 #ifdef SYNC_LOCK_TEST_AND_SET_IS_SWAP
-static inline int *OPA_swap_int_ptr(int * volatile *ptr, int *val)
+static inline void *OPA_swap_int_ptr(OPA_ptr_t *ptr, void *val)
 {
-    return __sync_lock_test_and_set(ptr, val, /* protected variables: */ ptr);
+    return __sync_lock_test_and_set(&ptr->v, val, /* protected variables: */ &ptr->v);
 }
 
-static inline int OPA_swap_int(volatile int *ptr, int val)
+static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 {
-    return __sync_lock_test_and_set(ptr, val, /* protected variables: */ ptr);
+    return __sync_lock_test_and_set(&ptr->v, val, /* protected variables: */ &ptr->v);
 }
 
 #else

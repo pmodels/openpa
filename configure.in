@@ -80,7 +80,7 @@ dnl but we should do so only after considering the full ramifications.
 if test "$GCC" = "yes" -o "$ac_cv_prog_CC" = "icc" ; then
     OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intel_32_64.h], [GCC_X86_32_64], [gcc x86/x86_64 bit primitives])
     OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ia64.h], [GCC_AND_IA64_ASM], [gcc ia64 primitives])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intrinsics.h], [GCC_INTRINSIC_ATOMICS], [gcc atomic intrinsic])
+    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intrinsics.h], [GCC_INTRINSIC_ATOMICS], [gcc atomic intrinsics])
     OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ppc.h], [GCC_AND_POWERPC_ASM], [gcc PowerPC atomics])
     OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_sicortex.h], [GCC_AND_SICORTEX_ASM], [gcc SiCortex atomics])
 fi

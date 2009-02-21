@@ -10,8 +10,8 @@
 #define MPIDU_ATOMIC_UNIVERSAL_PRIMITIVE MPIDU_ATOMIC_CAS
 
 /* XXX DJG FIXME do we need to align these? */
-typedef struct { volatile int v;  } OPA_int_t;
-typedef struct { int * volatile v; } OPA_ptr_t;
+typedef struct { volatile int v;    } OPA_int_t;
+typedef struct { void * volatile v; } OPA_ptr_t;
 
 /* Aligned loads and stores are atomic on x86(-64). */
 static inline int OPA_load(OPA_int_t *ptr)
@@ -121,9 +121,9 @@ static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 #define OPA_fetch_and_incr_by_faa OPA_fetch_and_incr 
 
 
-static inline int *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
+static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
-    int *prev;
+    void *prev;
     __asm__ __volatile__ ("lock ; cmpxchg %2,%3"
                           : "=a" (prev), "=m" (ptr->v)
                           : "q" (newv), "m" (ptr->v), "0" (oldv));
@@ -140,7 +140,7 @@ static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
     return prev;
 }
 
-static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
+static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
 {
     __asm__ __volatile__ ("xchg %0,%1"
                           :"=r" (val), "=m" (ptr->v)
