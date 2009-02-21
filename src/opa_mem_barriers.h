@@ -9,13 +9,13 @@
 
 /* TODO fill more of these in, including versions that use the AO lib */
 
-#include <config.h>
+#include "opa_config.h"
 
 #if defined(HAVE_NT_INTRINSICS)
 #include <intrin.h>
 #endif
 
-#if defined(HAVE_GCC_AND_PENTIUM_ASM) || defined(HAVE_GCC_AND_X86_64_ASM)
+#if defined(HAVE_GCC_X86_32_64)
 #  define OPA_Shm_write_barrier() __asm__ __volatile__  ( "sfence" ::: "memory" )
 #  define OPA_Shm_read_barrier() __asm__ __volatile__  ( "lfence" ::: "memory" )
 #  define OPA_Shm_read_write_barrier() __asm__ __volatile__  ( "mfence" ::: "memory" )

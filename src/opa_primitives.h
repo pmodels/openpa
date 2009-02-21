@@ -7,7 +7,7 @@
 #ifndef OPA_PRIMITIVES_H_INCLUDED
 #define OPA_PRIMITIVES_H_INCLUDED
 
-#include <config.h>
+#include "opa_config.h"
 
 /* FIXME We need assert capability but we can't rely on MPIU_Assert down at this
    level.  To futher complicate matters this is definitely performance critical
@@ -89,7 +89,7 @@ enum OPA_Universal_primitive_type {
 /* Include the appropriate header for the architecture */
 #if   defined(HAVE_GCC_AND_POWERPC_ASM)
 #include "primitives/opa_gcc_ppc.h"
-#elif defined(HAVE_GCC_AND_PENTIUM_ASM) || defined(HAVE_GCC_AND_X86_64_ASM)
+#elif defined(HAVE_GCC_X86_32_64)
 #include "primitives/opa_gcc_intel_32_64.h"
 #elif defined(HAVE_GCC_AND_IA64_ASM)
 #include "primitives/opa_gcc_ia64.h"

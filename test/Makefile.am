@@ -3,6 +3,7 @@
 #  (C) 2008 by Argonne National Laboratory.
 #      See COPYRIGHT in top-level directory.
 
-SUBDIRS = src test
-dist_doc_DATA = README
+noinst_PROGRAMS = sanity
+sanity_SOURCES = sanity.c
+AM_CFLAGS = -I$(top_srcdir)/src
 
