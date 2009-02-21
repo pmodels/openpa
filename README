@@ -15,3 +15,8 @@ TODO write some more content.
 
 - mention known issues and supported platforms (in a different file?)
 
+* One known issue is that the gcc atomic intrinsics aren't supported by
+  compilers prior to GCC 4.1.  In particular the Mac OS X compiler is gcc 4.0.1
+  so these result in a linker error when using this set of primitives.  The good
+  news is that on osx/intel we use native inline assembly anyway, so this isn't
+  a big problem.
