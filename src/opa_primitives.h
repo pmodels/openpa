@@ -8,25 +8,7 @@
 #define OPA_PRIMITIVES_H_INCLUDED
 
 #include "opa_config.h"
-
-/* FIXME We need assert capability but we can't rely on MPIU_Assert down at this
-   level.  To futher complicate matters this is definitely performance critical
-   code so these asserts need to be configureable just as MPIU_Asserts are.
-   Just define these asserts to be empty do/while loops for now.
-   [goodell@ 2009-01-27]. */
-#undef USE_ASSERT_IN_ATOMICS
-#if defined(USE_ASSERT_IN_ATOMICS)
-#  if defined(HAVE_ASSERT_H)
-#    include <assert.h>
-#    define OPA_assert(expr) assert((expr))
-#  else
-/* Just intentionally deref NULL so that we get a segfault. */
-#    define OPA_assert(expr) do { if (!(expr)) ++(*(int*)NULL); } while (0)
-#  endif
-#else /* !defined(USE_ASSERT_IN_ATOMICS) */
-#  define OPA_assert(expr) do {} while (0)
-#endif
-
+#include "opa_util.h"
 
 /*
    Primitive atomic functions

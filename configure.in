@@ -36,6 +36,28 @@ AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h])
 AC_C_RESTRICT
 AC_C_INLINE
 
+dnl Check for __attribute__ support.  This was originally taken from
+dnl the PAC_C_GNU_ATTRIBUTE macro in mpich2.
+dnl
+dnl We start by requiring Gcc.  Some other compilers accept __attribute__
+dnl but generate warning messages, or have different interpretations 
+dnl (which seems to make __attribute__ just as bad as #pragma) 
+dnl For example, the Intel icc compiler accepts __attribute__ and
+dnl __attribute__((pure)) but generates warnings for __attribute__((format...))
+if test "$GCC" = "yes" ; then
+    AC_CACHE_CHECK([whether __attribute__ allowed],
+pac_cv_gnu_attr_pure,[
+AC_TRY_COMPILE([int foo(int) __attribute__ ((pure));],[int a;],
+pac_cv_gnu_attr_pure=yes,pac_cv_gnu_attr_pure=no)])
+AC_CACHE_CHECK([whether __attribute__((format)) allowed],
+pac_cv_gnu_attr_format,[
+AC_TRY_COMPILE([int foo(char *,...) __attribute__ ((format(printf,1,2)));],[int a;],
+pac_cv_gnu_attr_format=yes,pac_cv_gnu_attr_format=no)])
+    if test "$pac_cv_gnu_attr_pure" = "yes" -a "$pac_cv_gnu_attr_format" = "yes" ; then
+        AC_DEFINE(HAVE_GCC_ATTRIBUTE,1,[Define if GNU __attribute__ is supported])
+    fi
+fi
+
 dnl is set to 1 by the macro below if any test ever succeeds
 non_emulated_primitives_available=0
 dnl OPA_TRY_PRIMITIVE_HEADER([header file from src/ dir], [HAVE_ macro suffix], [feature description])
