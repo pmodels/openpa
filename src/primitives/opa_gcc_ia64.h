@@ -9,20 +9,46 @@
 #ifndef OPA_GCC_IA64_H_INCLUDED
 #define OPA_GCC_IA64_H_INCLUDED
 
+/* XXX DJG FIXME do we need to align these? */
+typedef struct { volatile int v;    } OPA_int_t;
+typedef struct { void * volatile v; } OPA_ptr_t;
+
+/* Aligned loads and stores are atomic on x86(-64). */
+static inline int OPA_load(OPA_int_t *ptr)
+{
+    return ptr->v;
+}
+
+/* Aligned loads and stores are atomic on x86(-64). */
+static inline void OPA_store(OPA_int_t *ptr, int val)
+{
+    ptr->v = val;
+}
+
+/* Aligned loads and stores are atomic on x86(-64). */
+static inline void *OPA_load_ptr(OPA_ptr_t *ptr)
+{
+    return ptr->v;
+}
+
+/* Aligned loads and stores are atomic on x86(-64). */
+static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
+{
+    ptr->v = val;
+}
 
 #define OPA_add_by_faa OPA_add 
-#define OPA_incr_by_fai OPA_incr 
-#define OPA_decr_by_fad OPA_decr 
+#define OPA_incr_by_faa OPA_incr 
+#define OPA_decr_by_faa OPA_decr 
 #define OPA_fetch_and_decr_by_faa OPA_fetch_and_decr
 #define OPA_fetch_and_incr_by_faa OPA_fetch_and_incr
 
-
-static inline int OPA_decr_and_test(volatile int *ptr)
+static inline int OPA_decr_and_test(OPA_int_t *ptr)
 {
     int val;
     __asm__ __volatile__ ("fetchadd4.rel %0=[%2],%3"
-                          : "=r"(val), "=m"(*ptr)
-                          : "r"(ptr), "i"(-1));
+                          : "=r"(val), "=m"(ptr->v)
+                          : "r"(&ptr->v), "i"(-1));
     return val == 1;
 }
 
@@ -32,14 +58,14 @@ static inline int OPA_decr_and_test(volatile int *ptr)
 #define IA64_FAA_CASE_MACRO(ptr, val) case val: {       \
     int prev;                                           \
     __asm__ __volatile__ ("fetchadd4.rel %0=[%2],%3"    \
-                          : "=r"(prev), "=m"(*ptr)      \
-                          : "r"(ptr), "i"(val));        \
+                          : "=r"(prev), "=m"(ptr->)     \
+                          : "r"(&ptr->v), "i"(val));    \
     return prev;                                        \
     }                                                   \
     break
 
 
-static inline int OPA_fetch_and_add(volatile int *ptr, int val)
+static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
     switch (val)
     {
@@ -58,17 +84,17 @@ static inline int OPA_fetch_and_add(volatile int *ptr, int val)
 #undef IA64_FAA_CASE_MACRO
 
 
-static inline int *OPA_cas_int_ptr(int * volatile *ptr, int *oldv, int *newv)
+static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
     void *prev;
     __asm__ __volatile__ ("mov ar.ccv=%1;;"
                           "cmpxchg8.rel %0=[%3],%4,ar.ccv"
-                          : "=r"(prev), "=m"(*ptr)
-                          : "rO"(oldv), "r"(ptr), "r"(newv));
+                          : "=r"(prev), "=m"(ptr->v)
+                          : "rO"(oldv), "r"(&ptr->v), "r"(newv));
     return prev;   
 }
 
-static inline int OPA_cas_int(volatile int *ptr, int oldv, int newv)
+static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
     int prev;
 
@@ -77,16 +103,16 @@ static inline int OPA_cas_int(volatile int *ptr, int oldv, int newv)
     case 8:
         __asm__ __volatile__ ("mov ar.ccv=%1;;"
                               "cmpxchg8.rel %0=[%3],%4,ar.ccv"
-                              : "=r"(prev), "=m"(*ptr)
-                              : "rO"(oldv), "r"(ptr), "r"(newv)
+                              : "=r"(prev), "=m"(ptr->v)
+                              : "rO"(oldv), "r"(&ptr->v), "r"(newv)
                               : "memory");
         break;
     case 4:
         __asm__ __volatile__ ("zxt4 %1=%1;;" /* don't want oldv sign-extended to 64 bits */
-			      "mov ar.ccv=%1;;"
-			      "cmpxchg4.rel %0=[%3],%4,ar.ccv"
-                              : "=r"(prev), "=m"(*ptr)
-			      : "r0"(oldv), "r"(ptr), "r"(newv)
+                              "mov ar.ccv=%1;;"
+                              "cmpxchg4.rel %0=[%3],%4,ar.ccv"
+                              : "=r"(prev), "=m"(ptr->v)
+                              : "r0"(oldv), "r"(&ptr->v), "r"(newv)
                               : "memory");
         break;
     default:
@@ -96,22 +122,22 @@ static inline int OPA_cas_int(volatile int *ptr, int oldv, int newv)
     return prev;   
 }
 
-static inline int *OPA_swap_int_ptr(int * volatile *ptr, int *val)
+static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
 {
     /* is pointer swizzling necessary here? */
     __asm__ __volatile__ ("xchg8 %0=[%2],%3"
                           : "=r" (val), "=m" (*val)
-                          : "r" (ptr), "0" (val));
+                          : "r" (&ptr->v), "0" (val));
     return val;
 }
 
 
-static inline int OPA_swap_int(volatile int *ptr, int val)
+static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 {
     /* is pointer swizzling necessary here? */
     __asm__ __volatile__ ("xchg8 %0=[%2],%3"
                           : "=r" (val), "=m" (*val)
-                          : "r" (ptr), "0" (val));
+                          : "r" (&ptr->v), "0" (val));
     return val;
 }
 

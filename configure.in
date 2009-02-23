@@ -85,7 +85,7 @@ if test "$GCC" = "yes" -o "$ac_cv_prog_CC" = "icc" ; then
     OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_sicortex.h], [GCC_AND_SICORTEX_ASM], [gcc SiCortex atomics])
 fi
 OPA_TRY_PRIMITIVE_HEADER([primitives/opa_nt_intrinsics.h], [NT_INTRINSICS], [Windows NT atomic intrinsics])
-OPA_TRY_PRIMITIVE_HEADER([primitives/opa_sun_atomic_ops.h], [SUN_ATOMIC_OPS], [Sun's atomic operations library])
+OPA_TRY_PRIMITIVE_HEADER([primitives/opa_sun_atomic_ops.h], [SUN_ATOMIC_OPS], [Sun atomic operations library])
 
 if test "$non_emulated_primitives_available" = "0" ; then
     AC_MSG_WARN([
