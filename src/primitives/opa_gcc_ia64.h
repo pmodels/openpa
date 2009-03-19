@@ -13,25 +13,25 @@
 typedef struct { volatile int v;    } OPA_int_t;
 typedef struct { void * volatile v; } OPA_ptr_t;
 
-/* Aligned loads and stores are atomic on x86(-64). */
+/* Aligned loads and stores are atomic on ia64. */
 static inline int OPA_load(OPA_int_t *ptr)
 {
     return ptr->v;
 }
 
-/* Aligned loads and stores are atomic on x86(-64). */
+/* Aligned loads and stores are atomic on ia64. */
 static inline void OPA_store(OPA_int_t *ptr, int val)
 {
     ptr->v = val;
 }
 
-/* Aligned loads and stores are atomic on x86(-64). */
+/* Aligned loads and stores are atomic on ia64. */
 static inline void *OPA_load_ptr(OPA_ptr_t *ptr)
 {
     return ptr->v;
 }
 
-/* Aligned loads and stores are atomic on x86(-64). */
+/* Aligned loads and stores are atomic on ia64. */
 static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 {
     ptr->v = val;

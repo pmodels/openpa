@@ -31,8 +31,8 @@
 
    static inline int   OPA_load(OPA_int_t *ptr);
    static inline void  OPA_store(OPA_int_t *ptr, int val);
-   static inline void *OPA_load_ptr(OPA_int_t *ptr);
-   static inline void  OPA_store_ptr(OPA_int_t *ptr, void *val);
+   static inline void *OPA_load_ptr(OPA_ptr_t *ptr);
+   static inline void  OPA_store_ptr(OPA_ptr_t *ptr, void *val);
 
    static inline void OPA_add(OPA_int_t *ptr, int val);
    static inline void OPA_incr(OPA_int_t *ptr);
