@@ -58,7 +58,7 @@ static inline int OPA_decr_and_test(OPA_int_t *ptr)
 #define IA64_FAA_CASE_MACRO(ptr, val) case val: {       \
     int prev;                                           \
     __asm__ __volatile__ ("fetchadd4.rel %0=[%2],%3"    \
-                          : "=r"(prev), "=m"(ptr->)     \
+                          : "=r"(prev), "=m"(ptr->v)    \
                           : "r"(&ptr->v), "i"(val));    \
     return prev;                                        \
     }                                                   \
