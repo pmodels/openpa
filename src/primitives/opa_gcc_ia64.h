@@ -124,7 +124,6 @@ static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 
 static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
 {
-    /* is pointer swizzling necessary here? */
     __asm__ __volatile__ ("xchg8 %0=[%2],%3"
                           : "=r" (val), "=m" (ptr->v)
                           : "r" (&ptr->v), "0" (val));
@@ -134,7 +133,6 @@ static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
 
 static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 {
-    /* is pointer swizzling necessary here? */
     __asm__ __volatile__ ("xchg8 %0=[%2],%3"
                           : "=r" (val), "=m" (ptr->v)
                           : "r" (&ptr->v), "0" (val));
