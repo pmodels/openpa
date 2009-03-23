@@ -69,4 +69,9 @@ static inline int OPA_swap_int(volatile int *ptr, int val)
     return (int)atomic_swap_uint((volatile uint_t *)ptr, (uint_t) val);
 }
 
+#define OPA_write_barrier()      membar_producer()
+#define OPA_read_barrier()       membar_consumer()
+#define OPA_read_write_barrier() do { membar_consumer(); membar_producer(); } while (0)
+
+
 #endif /* OPA_SUN_ATOMIC_OPS_H_INCLUDED */

@@ -97,4 +97,8 @@ static inline int OPA_swap_int(volatile int *ptr, int val)
 #define OPA_fetch_and_decr OPA_fetch_and_decr_by_faa
 #include "opa_emulated.h"
 
+#define OPA_write_barrier()      _WriteBarrier();
+#define OPA_read_barrier()       _ReadBarrier();
+#define OPA_read_write_barrier() _ReadWriteBarrier();
+
 #endif /* defined(OPA_NT_INTRINSICS_H_INCLUDED) */

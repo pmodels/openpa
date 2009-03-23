@@ -82,6 +82,12 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 #define OPA_swap_int_by_cas OPA_swap_int 
 #endif
 
+#define OPA_write_barrier()      __sync_synchronize()
+#define OPA_read_barrier()       __sync_synchronize()
+#define OPA_read_write_barrier() __sync_synchronize()
+
+
+
 #include"opa_emulated.h"
 
 #endif /* OPA_GCC_INTRINSICS_H_INCLUDED */

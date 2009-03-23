@@ -156,6 +156,11 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
     return val;
 }
 
+#define OPA_write_barrier()      __asm__ __volatile__  ( "sfence" ::: "memory" )
+#define OPA_read_barrier()       __asm__ __volatile__  ( "lfence" ::: "memory" )
+#define OPA_read_write_barrier() __asm__ __volatile__  ( "mfence" ::: "memory" )
+
+
 #include"opa_emulated.h"
 
 #endif /* OPA_GCC_INTEL_32_64_H_INCLUDED */

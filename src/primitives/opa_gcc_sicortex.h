@@ -379,4 +379,8 @@ static __inline__ int OPA_swap_int(OPA_int_t *ptr, int val)
     return(shmemi_swap_4(&ptr->v, val));
 }
 
+#define OPA_write_barrier()      __asm__ __volatile__  ("sync" ::: "memory" )
+#define OPA_read_barrier()       __asm__ __volatile__  ("sync" ::: "memory" )
+#define OPA_read_write_barrier() __asm__ __volatile__  ("sync" ::: "memory" )
+
 #endif /* OPA_GCC_SICORTEX_H */

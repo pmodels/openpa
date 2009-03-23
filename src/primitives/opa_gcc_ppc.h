@@ -81,6 +81,14 @@ static inline int OPA_SC_ptr(OPA_ptr_t *ptr, int *val)
 #define OPA_swap_ptr_by_llsc       OPA_swap_ptr
 #define OPA_swap_int_by_llsc       OPA_swap_int
 
+/* FIXME: "sync" is a full memory barrier, we should look into using
+   less costly barriers (like lwsync or eieio) where appropriate
+   whenever they're available */
+#define OPA_write_barrier()      __asm__ __volatile__  ("sync" ::: "memory" )
+#define OPA_read_barrier()       __asm__ __volatile__  ("sync" ::: "memory" )
+#define OPA_read_write_barrier() __asm__ __volatile__  ("sync" ::: "memory" )
+
+
 #include "opa_emulated.h"
 
 #endif /* OPA_GCC_PPC_H_INCLUDED */

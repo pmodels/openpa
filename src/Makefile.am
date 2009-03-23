@@ -6,7 +6,7 @@
 lib_LIBRARIES = libopa.a
 libopa_a_SOURCES = opa_primitives.c opa_queue.c
 
-include_HEADERS = opa_config.h opa_mem_barriers.h opa_primitives.h opa_queue.h opa_util.h 
+include_HEADERS = opa_config.h opa_primitives.h opa_queue.h opa_util.h 
 
 # "nobase_" causes the primitives directory to be preserved when installed
 nobase_include_HEADERS = primitives/opa_by_lock.h primitives/opa_emulated.h    \

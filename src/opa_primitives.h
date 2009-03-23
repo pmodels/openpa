@@ -48,6 +48,10 @@
    
    static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val);
    static inline int  OPA_swap_int(OPA_int_t *ptr, int val);
+
+   static inline void OPA_write_barrier();
+   static inline void OPA_read_barrier();
+   static inline void OPA_read_write_barrier();
    
    
    The following need to be ported only for architectures supporting LL/SC:

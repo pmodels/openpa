@@ -195,5 +195,11 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
     return (int)prev;
 }
 
+/* lock/unlock provides barrier */
+#define OPA_write_barrier()      do {} while (0)
+#define OPA_read_barrier()       do {} while (0)
+#define OPA_read_write_barrier() do {} while (0)
+
+
 #endif /* defined(HAVE_PTHREAD_H) */
 #endif /* !defined(OPA_BY_LOCK_H_INCLUDED) */
