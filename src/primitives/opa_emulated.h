@@ -49,7 +49,7 @@ static inline void OPA_add_by_faa(OPA_int_t *ptr, int val)
 
 static inline void OPA_incr_by_add(OPA_int_t *ptr)
 {
-    OPA_Add(ptr, 1);
+    OPA_add(ptr, 1);
 }
 
 static inline void OPA_incr_by_fai(OPA_int_t *ptr)
