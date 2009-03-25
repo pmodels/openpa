@@ -1,5 +1,5 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*  
+/*
  *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
@@ -10,10 +10,10 @@
 #define OPA_QUOTE(x_) OPA_QUOTE2(x_)
 #define OPA_QUOTE2(x_) #x_
 
-#if defined(HAVE_GCC_ATTRIBUTE)
-#  define ATTRIBUTE(x_) __attribute__ (x)
+#if defined(OPA_HAVE_GCC_ATTRIBUTE)
+#  define OPA_ATTRIBUTE(x_) __attribute__ (x)
 #else
-#  define ATTRIBUTE(x_)
+#  define OPA_ATTRIBUTE(x_)
 #endif
 
 /* FIXME this just needs a total rework in general with an OPA_NDEBUG or similar. */

@@ -8,9 +8,9 @@
 #define OPA_QUEUE_H_INCLUDED
 
 #include "opa_primitives.h"
-#ifdef HAVE_STDDEF_H
+#ifdef OPA_HAVE_STDDEF_H
 #include <stddef.h>
-#endif /* HAVE_STDDEF_H */
+#endif /* OPA_HAVE_STDDEF_H */
 
 /* This value is used to indicate NULL in the OPA_Shm_asymm_base_addr
    variable.  It is non-zero because one of the likely base addresses is zero

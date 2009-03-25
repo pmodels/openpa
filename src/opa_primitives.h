@@ -73,19 +73,19 @@ enum OPA_Universal_primitive_type {
 };
 
 /* Include the appropriate header for the architecture */
-#if   defined(HAVE_GCC_AND_POWERPC_ASM)
+#if   defined(OPA_HAVE_GCC_AND_POWERPC_ASM)
 #include "primitives/opa_gcc_ppc.h"
-#elif defined(HAVE_GCC_X86_32_64)
+#elif defined(OPA_HAVE_GCC_X86_32_64)
 #include "primitives/opa_gcc_intel_32_64.h"
-#elif defined(HAVE_GCC_AND_IA64_ASM)
+#elif defined(OPA_HAVE_GCC_AND_IA64_ASM)
 #include "primitives/opa_gcc_ia64.h"
-#elif defined(HAVE_GCC_AND_SICORTEX_ASM)
+#elif defined(OPA_HAVE_GCC_AND_SICORTEX_ASM)
 #include "primitives/opa_gcc_sicortex.h"
-#elif defined(HAVE_GCC_INTRINSIC_ATOMICS)
+#elif defined(OPA_HAVE_GCC_INTRINSIC_ATOMICS)
 #include "primitives/opa_gcc_intrinsics.h"
-#elif defined(HAVE_SUN_ATOMIC_OPS)
+#elif defined(OPA_HAVE_SUN_ATOMIC_OPS)
 #include "primitives/opa_sun_atomic_ops.h"
-#elif defined(HAVE_NT_INTRINSICS)
+#elif defined(OPA_HAVE_NT_INTRINSICS)
 #include "primitives/opa_nt_intrinsics.h"
 #else
 /* No architecture specific atomics, using lock-based emulated
@@ -117,14 +117,14 @@ enum OPA_Universal_primitive_type {
 */
 /* FIXME We need to extricate ourselves from MPIDU_Process_locks because they
    are hopelessly broken. */
-#if defined(HAVE_PTHREAD_H)
+#if defined(OPA_HAVE_PTHREAD_H)
 #  include <pthread.h>
 int MPIDU_Interprocess_lock_init(pthread_mutex_t *shm_lock, int isLeader);
 #endif
 
 
 /* FIXME This should probably be pushed down into the platform-specific headers. */
-#if defined(HAVE_SCHED_YIELD)
+#if defined(OPA_HAVE_SCHED_YIELD)
 #  include <sched.h>
 #  define OPA_busy_wait() sched_yield()
 #else

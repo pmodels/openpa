@@ -9,7 +9,7 @@
 /* FIXME For now we rely on pthreads for our IPC locks.  This is fairly
    portable, although it is obviously not 100% portable.  Some day when we
    refactor the MPIDU_Process_locks code we should be able to use that again. */
-#if defined(HAVE_PTHREAD_H)
+#if defined(OPA_HAVE_PTHREAD_H)
 #include <pthread.h>
 #include <opa_primitives.h>
 
@@ -29,5 +29,5 @@ int OPA_Interprocess_lock_init(pthread_mutex_t *shm_lock, int isLeader)
 
     return mpi_errno;
 }
-#endif /* defined(HAVE_PTHREAD_H) */
+#endif /* defined(OPA_HAVE_PTHREAD_H) */
 

@@ -10,7 +10,7 @@
 /* FIXME For now we rely on pthreads for our IPC locks.  This is fairly
    portable, although it is obviously not 100% portable.  Some day when we
    refactor the OPA_Process_locks code we should be able to use that again. */
-#if defined(HAVE_PTHREAD_H)
+#if defined(OPA_HAVE_PTHREAD_H)
 #include <pthread.h>
 
 /* defined in mpidu_atomic_primitives.c */
@@ -201,5 +201,5 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 #define OPA_read_write_barrier() do {} while (0)
 
 
-#endif /* defined(HAVE_PTHREAD_H) */
+#endif /* defined(OPA_HAVE_PTHREAD_H) */
 #endif /* !defined(OPA_BY_LOCK_H_INCLUDED) */

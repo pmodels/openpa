@@ -10,21 +10,30 @@
 AC_PREREQ(2.62)
 
 AC_INIT([OpenPA], [0.0.1], [https://trac.mcs.anl.gov/projects/openpa/newticket])
+dnl Set the directory that contains support scripts such as install-sh and
+dnl config.guess.  It also contains autoconf macro files.
+AC_CONFIG_AUX_DIR(confdb)
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # FIXME this header needs to end up in the installation include directory in some form,
 # so we probably need to change its name to something that won't collide in the
 # global namespace. [goodell@ 2009-02-19]
-AC_CONFIG_HEADER([src/opa_config.h])
+AC_CONFIG_HEADER([src/config.h])
 AH_TOP([/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*  
+/*
  *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
-#ifndef OPA_CONIG_H_INCLUDED
-#define OPA_CONIG_H_INCLUDED
 ])
-AH_BOTTOM([#endif /* OPA_CONIG_H_INCLUDED */])
+AH_BOTTOM([])
+
+dnl Preps an opa_config.h with prefixed macros from config.h for output at
+dnl AC_OUTPUT time.  This way we can safely include opa_config.h in the
+dnl installation and include it in installed headers.
+AX_PREFIX_CONFIG_H([src/opa_config.h],[OPA])
+
+########################################################################
 
 AC_PROG_CC
 AC_PROG_RANLIB
@@ -35,6 +44,8 @@ AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h])
 
 AC_C_RESTRICT
 AC_C_INLINE
+
+AC_CHECK_SIZEOF([void *])
 
 dnl Check for __attribute__ support.  This was originally taken from
 dnl the PAC_C_GNU_ATTRIBUTE macro in mpich2.
@@ -69,6 +80,7 @@ AC_MSG_CHECKING([for support for $3])
 SAVE_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir}/src"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+    #include "opa_util.h" /* for ATTRIBUTE and friends */
     #include "$1"
 ]],[[
     OPA_int_t a, b;

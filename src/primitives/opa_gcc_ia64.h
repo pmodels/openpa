@@ -78,6 +78,9 @@ static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
         IA64_FAA_CASE_MACRO(ptr,   8);
         IA64_FAA_CASE_MACRO(ptr,  16);
     default:
+        /* FIXME calling this here and including opa_emulated.h at the end of
+         * the file causes a conflict.  Need to figure out the right combination
+         * of ordering, macros, and prototypes to make this all work correctly. */
         return OPA_fetch_and_add_by_cas(ptr, val);
     }
 }

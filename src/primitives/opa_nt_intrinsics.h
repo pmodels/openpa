@@ -62,12 +62,24 @@ static inline int OPA_fetch_and_add(volatile int *ptr, int val)
 
 static inline int *OPA_cas_int_ptr(int * volatile *ptr, int *oldv, int *newv)
 {
-#if (SIZEOF_VOID_P == 4)
+    /* FIXME OPA_SIZEOF_VOID_P is defined after configure time, but during
+     * configure (where this header is also used) it is only called
+     * SIZEOF_VOID_P.  We need a general solution to this problem, since it
+     * shows up in other files too.  Punting for the moment since the NT
+     * intrinsics doesn't even compile right now, but this is something we need
+     * to fix.
+     *
+     * possibly just something like?:
+     *   #if !defined(OPA_SIZEOF_VOID_P) && defined(SIZEOF_VOID_P)
+     *   #  define OPA_SIZEOF_VOID_P SIZEOF_VOID_P
+     *   #endif
+     */
+#if (OPA_SIZEOF_VOID_P == 4)
     return _InterlockedCompareExchange(ptr, newv, oldv);
-#elif (SIZEOF_VOID_P == 8)
+#elif (OPA_SIZEOF_VOID_P == 8)
     return _InterlockedCompareExchange64(ptr, newv, oldv);
 #else
-#error  "SIZEOF_VOID_P not valid"
+#error  "OPA_SIZEOF_VOID_P not valid"
 #endif
 }
 
@@ -78,12 +90,12 @@ static inline int OPA_cas_int(volatile int *ptr, int oldv, int newv)
 
 static inline int *OPA_swap_int_ptr(int * volatile *ptr, int *val)
 {
-#if (SIZEOF_VOID_P == 4)
+#if (OPA_SIZEOF_VOID_P == 4)
     return _InterlockedExchange(ptr, val);
-#elif (SIZEOF_VOID_P == 8)
+#elif (OPA_SIZEOF_VOID_P == 8)
     return _InterlockedExchange64(ptr, val);
 #else
-#error  "SIZEOF_VOID_P not valid"
+#error  "OPA_SIZEOF_VOID_P not valid"
 #endif
 }
 
