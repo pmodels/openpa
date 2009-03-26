@@ -7,8 +7,7 @@ TODO write some more content.
 - point to website and bug tracking
 - explain how to build
 
-% automake --add-missing
-% autoreconf
+% autoreconf -vif
 % ./configure [configure_args]
 % make
 % make install
