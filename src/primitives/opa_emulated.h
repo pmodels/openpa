@@ -1,11 +1,11 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*  
+/*
  *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
 
-#ifndef MPIDU_ATOMIC_EMULATED_H_INCLUDED
-#define MPIDU_ATOMIC_EMULATED_H_INCLUDED
+#ifndef OPA_EMULATED_H_INCLUDED
+#define OPA_EMULATED_H_INCLUDED
 
 /* Functions emulated using other atomics
 
@@ -182,4 +182,4 @@ static inline int OPA_swap_int_by_llsc(OPA_int_t *ptr, int val)
 #endif /* ATOMIC_LL_SC_SUPPORTED */
 
 
-#endif /* MPIDU_ATOMIC_EMULATED_H_INCLUDED */
+#endif /* OPA_EMULATED_H_INCLUDED */

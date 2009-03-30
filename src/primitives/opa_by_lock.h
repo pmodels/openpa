@@ -13,13 +13,9 @@
 #if defined(OPA_HAVE_PTHREAD_H)
 #include <pthread.h>
 
-/* defined in mpidu_atomic_primitives.c */
+/* defined in opa_primitives.c */
 pthread_mutex_t *OPA_emulation_lock;
 
-/*
-    These macros are analogous to the MPIDU_THREAD_XXX_CS_{ENTER,EXIT} macros.
-    TODO Consider putting debugging macros in here that utilize 'msg'.
-*/
 /* FIXME these make less sense now that OPA is not inside of MPICH2.  Is there a
    simpler name/scheme that could be used here instead? [goodell@ 2009-02-19] */
 #define OPA_IPC_SINGLE_CS_ENTER(msg)          \
@@ -51,12 +47,12 @@ typedef struct { int * volatile v; } OPA_ptr_t;
     inside of a single critical section.  These emulated primitives exist to
     ensure that there is always a fallback if no machine-dependent version of a
     particular operation has been defined.  They also serve as a very readable
-    reference for the exact semantics of our MPIDU_Atomic ops.
+    reference for the exact semantics of our OPA_* ops.
 */
 
 /* We don't actually implement CAS natively, but we do support all the non-LL/SC
    primitives including CAS. */
-#define MPIDU_ATOMIC_UNIVERSAL_PRIMITIVE MPIDU_ATOMIC_CAS
+#define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
 
 static inline int OPA_load(OPA_int_t *ptr)
 {

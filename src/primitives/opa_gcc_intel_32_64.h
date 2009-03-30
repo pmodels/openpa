@@ -1,5 +1,5 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*  
+/*
  *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
@@ -7,7 +7,7 @@
 #ifndef OPA_GCC_INTEL_32_64_H_INCLUDED
 #define OPA_GCC_INTEL_32_64_H_INCLUDED
 
-#define MPIDU_ATOMIC_UNIVERSAL_PRIMITIVE MPIDU_ATOMIC_CAS
+#define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
 
 /* XXX DJG FIXME do we need to align these? */
 typedef struct { volatile int v;    } OPA_int_t;

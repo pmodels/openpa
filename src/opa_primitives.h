@@ -112,14 +112,16 @@ enum OPA_Universal_primitive_type {
 
     Inputs:
       shm_lock - A pointer to an allocated piece of shared memory that can hold
-                 an MPIDU_Process_lock_t.  This 
-      isLeader - This boolean value should be set to true 
+                 a pthread_mutex_t.  This is not portable to non-pthreads
+                 systems at this time.
+      isLeader - This boolean value should be set to true for exactly one
+                 thread/process of the group that calls this function.
 */
 /* FIXME We need to extricate ourselves from MPIDU_Process_locks because they
-   are hopelessly broken. */
+   are hopelessly broken and OPA no longer lives inside of MPICH2. */
 #if defined(OPA_HAVE_PTHREAD_H)
 #  include <pthread.h>
-int MPIDU_Interprocess_lock_init(pthread_mutex_t *shm_lock, int isLeader);
+int OPA_Interprocess_lock_init(pthread_mutex_t *shm_lock, int isLeader);
 #endif
 
 
