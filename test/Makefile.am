@@ -8,6 +8,6 @@ TESTS = sanity test_primitives
 check_PROGRAMS = $(TESTS)
 
 sanity_SOURCES = sanity.c
-test_primitives_SOURCES = test_primitives.c
+test_primitives_SOURCES = test_primitives.c opa_test.h
 
-AM_CFLAGS = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src
