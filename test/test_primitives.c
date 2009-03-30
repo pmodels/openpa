@@ -177,7 +177,7 @@ static int test_threaded_loadstore_int(void)
 
     /* Create the threads */
     for(i=0; i<nthreads; i++) {
-        thread_data[i].shared_val = &shared_int;
+        thread_data[i].shared_val = shared_int;
         thread_data[i].unique_val = i * LOADSTORE_INT_DIFF;
         if(pthread_create(&threads[i], NULL, threaded_loadstore_int_helper,
                 &thread_data[i])) TEST_ERROR;
