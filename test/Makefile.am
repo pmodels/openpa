@@ -3,7 +3,11 @@
 #  (C) 2008 by Argonne National Laboratory.
 #      See COPYRIGHT in top-level directory.
 
-noinst_PROGRAMS = sanity
-sanity_SOURCES = sanity.c
-AM_CFLAGS = -I$(top_srcdir)/src
+TESTS = sanity test_primitives
 
+check_PROGRAMS = $(TESTS)
+
+sanity_SOURCES = sanity.c
+test_primitives_SOURCES = test_primitives.c
+
+AM_CFLAGS = -I$(top_srcdir)/src

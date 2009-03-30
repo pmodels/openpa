@@ -43,11 +43,11 @@
    static inline int OPA_fetch_and_decr(OPA_int_t *ptr);
    static inline int OPA_fetch_and_incr(OPA_int_t *ptr);
    
-   static inline int *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv);
-   static inline int  OPA_cas_int(OPA_int_t *ptr, int oldv, int newv);
+   static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv);
+   static inline int   OPA_cas_int(OPA_int_t *ptr, int oldv, int newv);
    
-   static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val);
-   static inline int  OPA_swap_int(OPA_int_t *ptr, int val);
+   static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val);
+   static inline int   OPA_swap_int(OPA_int_t *ptr, int val);
 
    static inline void OPA_write_barrier();
    static inline void OPA_read_barrier();
@@ -56,8 +56,8 @@
    
    The following need to be ported only for architectures supporting LL/SC:
    
-   static inline int OPA_LL_ptr(OPA_ptr_t *ptr);
-   static inline int OPA_SC_ptr(OPA_ptr_t *ptr, int *val);
+   static inline void *OPA_LL_ptr(OPA_ptr_t *ptr);
+   static inline int OPA_SC_ptr(OPA_ptr_t *ptr, void *val);
    static inline int OPA_LL_int(volatile int *ptr);
    static inline int OPA_SC_int(volatile int *ptr, int val);
 

@@ -48,7 +48,7 @@ static inline int OPA_SC_int(OPA_int_t *ptr, int val)
    differing word and pointer widths we can write separate versions.
 */
 
-static inline int *OPA_LL_ptr(OPA_ptr_t *ptr)
+static inline void *OPA_LL_ptr(OPA_ptr_t *ptr)
 {
     /* need to implement a separate ptr-sized version, although it's not needed
        on the BG/P it might be needed on a different PPC impl */
@@ -58,7 +58,7 @@ static inline int *OPA_LL_ptr(OPA_ptr_t *ptr)
 }
 
 /* Returns non-zero if the store was successful, zero otherwise. */
-static inline int OPA_SC_ptr(OPA_ptr_t *ptr, int *val)
+static inline int OPA_SC_ptr(OPA_ptr_t *ptr, void *val)
 {
     /* need to implement a separate ptr-sized version, although it's not needed
        on the BG/P it might be needed on a different PPC impl */

@@ -45,6 +45,10 @@ AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h])
 AC_C_RESTRICT
 AC_C_INLINE
 
+dnl Check for presence f the pthreads library.  This is needed by the test
+dnl suite.
+AC_CHECK_LIB(pthread, pthread_create)
+
 AC_CHECK_SIZEOF([void *])
 
 dnl Check for __attribute__ support.  This was originally taken from

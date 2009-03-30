@@ -39,9 +39,23 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 
 static inline void OPA_add(OPA_int_t *ptr, int val)
 {
-    __asm__ __volatile__ ("lock ; add %1,%0"
-                          :"=m" (ptr->v)
-                          :"ir" (val), "m" (ptr->v));
+    switch(sizeof(ptr->v))
+    {
+    case 4:
+        __asm__ __volatile__ ("lock ; addl %1,%0"
+                            :"=m" (ptr->v)
+                            :"ir" (val), "m" (ptr->v));
+        break;
+    case 8:
+        __asm__ __volatile__ ("lock ; addq %1,%0"
+                            :"=m" (ptr->v)
+                            :"ir" (val), "m" (ptr->v));
+        break;
+    default:
+        /* int is not 64 or 32 bits  */
+        OPA_assert(0);
+    }
+    return;
 }
 
 static inline void OPA_incr(OPA_int_t *ptr)
