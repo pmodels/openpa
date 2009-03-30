@@ -93,7 +93,7 @@ enum OPA_Universal_primitive_type {
 
 /* This is defined to ensure that interprocess locks are properly
    initialized. */
-#define USE_ATOMIC_EMULATION
+#define OPA_USE_EMULATION
 #include "primitives/opa_by_lock.h"
 #endif
 
@@ -104,7 +104,7 @@ enum OPA_Universal_primitive_type {
     shared memory region, we need a shared memory backed lock mechanism.
 
     This routine must be called by any subsystem that intends to use the atomic
-    abstractions if the cpp directive USE_ATOMIC_EMULATION is defined.  It must
+    abstractions if the cpp directive OPA_USE_EMULATION is defined.  It must
     be called exactly once by _all_ processes, not just a single leader.  This
     function will initialize the contents of the lock variable if the caller
     specifies (isLeader==true).  Note that multiple initialization is forbidden
