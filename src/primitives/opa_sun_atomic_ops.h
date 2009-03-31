@@ -72,7 +72,7 @@ static inline int OPA_fetch_and_incr(OPA_int_t *ptr)
 }
 
 
-static inline int *OPA_cas_ptr(OPA_ptr_t *ptr, int *oldv, int *newv)
+static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
     return atomic_cas_ptr(ptr, oldv, newv);
 }
@@ -83,7 +83,7 @@ static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 }
 
 
-static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val)
+static inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
 {
     return atomic_swap_ptr(ptr, val);
 }

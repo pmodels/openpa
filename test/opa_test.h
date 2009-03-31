@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#if defined(HAVE_PTHREAD_H)
+#if defined(OPA_HAVE_PTHREAD_H)
 #include <pthread.h>
 #endif /* HAVE_PTHREAD_H */
 
