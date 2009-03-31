@@ -54,7 +54,7 @@ static inline void *OPA_LL_ptr(OPA_ptr_t *ptr)
        on the BG/P it might be needed on a different PPC impl */
     OPA_COMPILE_TIME_ASSERT(sizeof(int) == sizeof(void *)); 
     OPA_COMPILE_TIME_ASSERT(sizeof(OPA_int_t) == sizeof(OPA_ptr_t));
-    return OPA_LL_int((OPA_int_t *)ptr);
+    return (void *) OPA_LL_int((OPA_int_t *)ptr);
 }
 
 /* Returns non-zero if the store was successful, zero otherwise. */

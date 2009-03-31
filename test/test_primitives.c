@@ -16,7 +16,7 @@
 
 /* Definitions for test_threaded_loadstore_int */
 #define LOADSTORE_INT_DIFF ((1 << (sizeof(int) * CHAR_BIT / 2)) - 1)
-#define LOADSTORE_INT_NITER 2000000
+#define LOADSTORE_INT_NITER 4000000
 typedef struct {
     OPA_int_t   *shared_val;    /* Shared int being read/written by all threads */
     int         unique_val;     /* This thread's unique value to store in shared_val */
@@ -24,7 +24,7 @@ typedef struct {
 
 /* Definitions for test_threaded_loadstore_ptr */
 #define LOADSTORE_PTR_DIFF (((unsigned long) 1 << (sizeof(void *) * CHAR_BIT / 2)) - 1)
-#define LOADSTORE_PTR_NITER 2000000
+#define LOADSTORE_PTR_NITER 4000000
 typedef struct {
     OPA_ptr_t   *shared_val;    /* Shared int being read/written by all threads */
     void        *unique_val;    /* This thread's unique value to store in shared_val */
@@ -32,7 +32,7 @@ typedef struct {
 
 /* Definitions for test_threaded_add */
 #define ADD_EXPECTED 0
-#define ADD_NITER 1000000
+#define ADD_NITER 2000000
 typedef struct {
     OPA_int_t   *shared_val;    /* Shared int being added to by all threads */
     int         unique_val;    /* This thread's unique value to add to shared_val */
@@ -106,8 +106,6 @@ error:
 static void *threaded_loadstore_int_helper(void *_udata)
 {
     loadstore_int_t     *udata = (loadstore_int_t *)_udata;
-    OPA_int_t           *shared_val = udata->shared_val;
-    int                 unique_val = udata->unique_val;
     int                 loaded_val;
     int                 niter = LOADSTORE_INT_NITER / iter_reduction[curr_test];
     int                 nerrors = 0;
@@ -155,7 +153,7 @@ static int test_threaded_loadstore_int(void)
     pthread_t           *threads = NULL; /* Threads */
     pthread_attr_t      ptattr;         /* Thread attributes */
     loadstore_int_t     *thread_data = NULL; /* User data structs for each thread */
-    OPA_int_t           shared_int[2];     /* Integer shared between threads */
+    OPA_int_t           shared_int;     /* Integer shared between threads */
     void                *ret;           /* Thread return value */
     unsigned            nthreads = num_threads[curr_test];
     int                 nerrors = 0;    /* number of errors */
@@ -177,7 +175,7 @@ static int test_threaded_loadstore_int(void)
 
     /* Create the threads */
     for(i=0; i<nthreads; i++) {
-        thread_data[i].shared_val = shared_int;
+        thread_data[i].shared_val = &shared_int;
         thread_data[i].unique_val = i * LOADSTORE_INT_DIFF;
         if(pthread_create(&threads[i], NULL, threaded_loadstore_int_helper,
                 &thread_data[i])) TEST_ERROR;
@@ -288,8 +286,6 @@ error:
 static void *threaded_loadstore_ptr_helper(void *_udata)
 {
     loadstore_ptr_t     *udata = (loadstore_ptr_t *)_udata;
-    OPA_ptr_t           *shared_val = udata->shared_val;
-    void                *unique_val = udata->unique_val;
     unsigned long       loaded_val;
     int                 niter = LOADSTORE_PTR_NITER / iter_reduction[curr_test];
     int                 nerrors = 0;
@@ -489,8 +485,6 @@ error:
 static void *threaded_add_helper(void *_udata)
 {
     add_t               *udata = (add_t *)_udata;
-    OPA_int_t           *shared_val = udata->shared_val;
-    int                 unique_val = udata->unique_val;
     int                 niter = ADD_NITER / iter_reduction[curr_test];
     int                 i;
 
