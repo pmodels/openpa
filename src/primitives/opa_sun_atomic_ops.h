@@ -94,8 +94,8 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 }
 
 
-#define MPIDU_Shm_write_barrier()      membar_producer()
-#define MPIDU_Shm_read_barrier()       membar_consumer()
-#define MPIDU_Shm_read_write_barrier() do { membar_consumer(); membar_producer(); } while (0)
+#define OPA_write_barrier()      membar_producer()
+#define OPA_read_barrier()       membar_consumer()
+#define OPA_read_write_barrier() do { membar_consumer(); membar_producer(); } while (0)
 
 #endif /* OPA_SUN_ATOMIC_OPS_H_INCLUDED */
