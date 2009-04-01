@@ -15,6 +15,10 @@
 #include "opa_test.h"
 
 /* Definitions for test_threaded_loadstore_int */
+/* LOADSTORE_INT_DIFF is the difference between the unique values of successive
+ * threads.  This value contains 0's in the top half of the int and 1's in the
+ * bottom half.  Therefore, for 4 byte ints the sequence of unique values is:
+ * 0x00000000, 0x0000FFFF, 0x0001FFFE, 0x0002FFFD, etc. */
 #define LOADSTORE_INT_DIFF ((1 << (sizeof(int) * CHAR_BIT / 2)) - 1)
 #define LOADSTORE_INT_NITER 4000000
 typedef struct {
@@ -118,7 +122,7 @@ static void *threaded_loadstore_int_helper(void *_udata)
 
         /* Load the shared_value, and check if it is valid */
         if((loaded_val = OPA_load(udata->shared_val)) % LOADSTORE_INT_DIFF) {
-            printf("    Unexpected load: %d is not a multiple of %d (case 1)\n",
+            printf("    Unexpected load: %d is not a multiple of %d\n",
                     loaded_val, LOADSTORE_INT_DIFF);
             nerrors++;
         } /* end if */
@@ -177,7 +181,7 @@ static int test_threaded_loadstore_int(void)
     for(i=0; i<nthreads; i++) {
         thread_data[i].shared_val = &shared_int;
         thread_data[i].unique_val = i * LOADSTORE_INT_DIFF;
-        if(pthread_create(&threads[i], NULL, threaded_loadstore_int_helper,
+        if(pthread_create(&threads[i], &ptattr, threaded_loadstore_int_helper,
                 &thread_data[i])) TEST_ERROR;
     } /* end for */
 
@@ -298,7 +302,7 @@ static void *threaded_loadstore_ptr_helper(void *_udata)
 
         /* Load the shared_value, and check if it is valid */
         if((loaded_val = (unsigned long) OPA_load_ptr(udata->shared_val)) % LOADSTORE_PTR_DIFF) {
-            printf("    Unexpected load: %ld is not a multiple of %ld (case 1)\n",
+            printf("    Unexpected load: %lu is not a multiple of %lu\n",
                     loaded_val, LOADSTORE_PTR_DIFF);
             nerrors++;
         } /* end if */
@@ -357,7 +361,7 @@ static int test_threaded_loadstore_ptr(void)
     for(i=0; i<nthreads; i++) {
         thread_data[i].shared_val = &shared_ptr;
         thread_data[i].unique_val = (void *) ((unsigned long) i * LOADSTORE_PTR_DIFF);
-        if(pthread_create(&threads[i], NULL, threaded_loadstore_ptr_helper,
+        if(pthread_create(&threads[i], &ptattr, threaded_loadstore_ptr_helper,
                 &thread_data[i])) TEST_ERROR;
     } /* end for */
 
@@ -472,8 +476,7 @@ error:
  *
  * Purpose: Helper (thread) routine for test_threaded_add
  *
- * Return: Success: NULL
- *         Failure: non-NULL
+ * Return: NULL
  *
  * Programmer: Neil Fortner
  *             Thursday, March 20, 2009
@@ -493,7 +496,7 @@ static void *threaded_add_helper(void *_udata)
         /* Add the unique value to the shared value */
         OPA_add(udata->shared_val, udata->unique_val);
 
-    /* Any non-NULL exit value indicates an error, we use &i here */
+    /* Exit */
     pthread_exit(NULL);
 } /* end threaded_add_helper() */
 #endif /* OPA_HAVE_PTHREAD_H */
@@ -547,7 +550,7 @@ static int test_threaded_add(void)
         thread_data[i].shared_val = &shared_val;
         thread_data[i].unique_val = i - (nthreads - 1) / 2
                 - (!(nthreads % 2) && (i >= nthreads / 2));
-        if(pthread_create(&threads[i], NULL, threaded_add_helper,
+        if(pthread_create(&threads[i], &ptattr, threaded_add_helper,
                 &thread_data[i])) TEST_ERROR;
     } /* end for */
 
@@ -606,11 +609,14 @@ int main(int argc, char **argv)
 {
     unsigned nerrors = 0;
 
+    /* Simple tests */
     nerrors += test_simple_loadstore_int();
     nerrors += test_simple_loadstore_ptr();
     nerrors += test_simple_add_incr_decr();
 
+    /* Loop over test configurations */
     for(curr_test=0; curr_test<num_thread_tests; curr_test++) {
+        /* Threaded tests */
         nerrors += test_threaded_loadstore_int();
         nerrors += test_threaded_loadstore_ptr();
         nerrors += test_threaded_add();
@@ -629,3 +635,4 @@ error:
             nerrors, 1 == nerrors ? "" : "S");
     return 1;
 } /* end main() */
+

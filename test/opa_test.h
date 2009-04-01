@@ -68,6 +68,10 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
     return prev;
 }
 
+#define OPA_write_barrier() ((void) 0)
+#define OPA_read_barrier() ((void) 0)
+#define OPA_read_write_barrier() ((void) 0)
+
 #endif /* OPA_TEST_NAIVE */
 
 /*
