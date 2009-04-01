@@ -9,6 +9,20 @@
 
 #define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
 
+#ifndef OPA_SIZEOF_INT
+#error OPA_SIZEOF_INT is not defined
+#endif
+
+/* Set OPA_SS (Size Suffix) which is to be appended to asm ops for
+   specifying 4 or 8 byte operands */
+#if OPA_SIZEOF_INT == 4
+#define OPA_SS "l"
+#elif OPA_SIZEOF_INT == 8
+#define OPA_SS "q"
+#else
+#error OPA_SIZEOF_INT is not 4 or 8
+#endif
+
 /* XXX DJG FIXME do we need to align these? */
 typedef struct { volatile int v;    } OPA_int_t;
 typedef struct { void * volatile v; } OPA_ptr_t;
@@ -39,87 +53,35 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 
 static inline void OPA_add(OPA_int_t *ptr, int val)
 {
-    switch(sizeof(ptr->v))
-    {
-    case 4:
-        __asm__ __volatile__ ("lock ; addl %1,%0"
-                            :"=m" (ptr->v)
-                            :"ir" (val), "m" (ptr->v));
-        break;
-    case 8:
-        __asm__ __volatile__ ("lock ; addq %1,%0"
-                            :"=m" (ptr->v)
-                            :"ir" (val), "m" (ptr->v));
-        break;
-    default:
-        /* int is not 64 or 32 bits  */
-        OPA_assert(0);
-    }
+    __asm__ __volatile__ ("lock ; add"OPA_SS" %1,%0"
+                          :"=m" (ptr->v)
+                          :"ir" (val), "m" (ptr->v));
     return;
 }
 
 static inline void OPA_incr(OPA_int_t *ptr)
 {
-    switch(sizeof(ptr->v))
-    {
-    case 4:
-        __asm__ __volatile__ ("lock ; incl %0"
-                              :"=m" (ptr->v)
-                              :"m" (ptr->v));
-        break;
-    case 8:
-        __asm__ __volatile__ ("lock ; incq %0"
-                              :"=m" (ptr->v)
-                              :"m" (ptr->v));
-        break;
-    default:
-        /* int is not 64 or 32 bits  */
-        OPA_assert(0);
-    }
+    __asm__ __volatile__ ("lock ; inc"OPA_SS" %0"
+                          :"=m" (ptr->v)
+                          :"m" (ptr->v));
     return;
 }
 
 static inline void OPA_decr(OPA_int_t *ptr)
 {
-    switch(sizeof(ptr->v))
-    {
-    case 4:
-        __asm__ __volatile__ ("lock ; decl %0"
-                              :"=m" (ptr->v)
-                              :"m" (ptr->v));
-        break;
-    case 8:
-        __asm__ __volatile__ ("lock ; decq %0"
-                              :"=m" (ptr->v)
-                              :"m" (ptr->v));
-        break;
-    default:
-        /* int is not 64 or 32 bits  */
-        OPA_assert(0);
-    }
+    __asm__ __volatile__ ("lock ; dec"OPA_SS" %0"
+                          :"=m" (ptr->v)
+                          :"m" (ptr->v));
     return;
 }
 
 
 static inline int OPA_decr_and_test(OPA_int_t *ptr)
 {
-    int result;
-    switch(sizeof(ptr->v))
-    {
-    case 4:
-        __asm__ __volatile__ ("lock ; decl %0; setz %1"
-                              :"=m" (ptr->v), "=q" (result)
-                              :"m" (ptr->v));
-        break;
-    case 8:
-        __asm__ __volatile__ ("lock ; decq %0; setz %1"
-                              :"=m" (ptr->v), "=q" (result)
-                              :"m" (ptr->v));
-        break;
-    default:
-        /* int is not 64 or 32 bits  */
-        OPA_assert(0);
-    }
+    char result;
+    __asm__ __volatile__ ("lock ; dec"OPA_SS" %0; setz %1"
+                          :"=m" (ptr->v), "=q" (result)
+                          :"m" (ptr->v));
     return result;
 }
 
@@ -176,5 +138,7 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 
 
 #include"opa_emulated.h"
+
+#undef OPA_SS
 
 #endif /* OPA_GCC_INTEL_32_64_H_INCLUDED */

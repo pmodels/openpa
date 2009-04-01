@@ -70,10 +70,10 @@ static inline void OPA_decr_by_fad(OPA_int_t *ptr)
 
 /* Swap using CAS */
 
-static inline int *OPA_swap_ptr_by_cas(OPA_ptr_t *ptr, int *val)
+static inline void *OPA_swap_ptr_by_cas(OPA_ptr_t *ptr, void *val)
 {
-    int *cmp;
-    int *prev = OPA_load_ptr(ptr);
+    void *cmp;
+    void *prev = OPA_load_ptr(ptr);
 
     do {
         cmp = prev;

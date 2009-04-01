@@ -119,7 +119,7 @@ static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
                               : "memory");
         break;
     default:
-        MPIU_Assertp (0);
+        OPA_Assertp(0);
     }
     
     return prev;   

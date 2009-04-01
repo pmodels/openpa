@@ -50,6 +50,7 @@ dnl suite.
 AC_CHECK_LIB(pthread, pthread_create)
 
 AC_CHECK_SIZEOF([void *])
+AC_CHECK_SIZEOF([int])
 
 dnl Check for __attribute__ support.  This was originally taken from
 dnl the PAC_C_GNU_ATTRIBUTE macro in mpich2.
@@ -84,16 +85,33 @@ AC_MSG_CHECKING([for support for $3])
 SAVE_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir}/src"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+    #define OPA_SIZEOF_INT SIZEOF_INT
+    #define OPA_SIZEOF_VOID_P SIZEOF_VOID_P
     #include "opa_util.h" /* for ATTRIBUTE and friends */
     #include "$1"
 ]],[[
     OPA_int_t a, b;
     int c;
+
     OPA_store(&a, 0);
     OPA_store(&b, 1);
+    c = OPA_load(&a);
+
     OPA_add(&a, 10);
+    OPA_incr(&a);
+    OPA_decr(&a);
+
+    c = OPA_decr_and_test(&a);
+    c = OPA_fetch_and_add(&a, 10);
+    c = OPA_fetch_and_incr(&a);
+    c = OPA_fetch_and_decr(&a);
+
     c = OPA_cas_int(&a, 10, 11);
     c = OPA_swap_int(&a, OPA_load(&b));
+
+    OPA_write_barrier();
+    OPA_read_barrier();
+    OPA_read_write_barrier();
  ]])]
 ,AC_DEFINE(HAVE_$2, 1, [define to 1 if we have support for $3])
 non_emulated_primitives_available=1
@@ -115,13 +133,13 @@ dnl the name "icc" for now to make sure that we don't get a compiler that
 dnl supports "asm()" but uses a different style of arguments than gcc.  It is
 dnl probably safe to drop the test for the particular compiler in the future,
 dnl but we should do so only after considering the full ramifications.
-if test "$GCC" = "yes" -o "$ac_cv_prog_CC" = "icc" ; then
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intel_32_64.h], [GCC_X86_32_64], [gcc x86/x86_64 bit primitives])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ia64.h], [GCC_AND_IA64_ASM], [gcc ia64 primitives])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intrinsics.h], [GCC_INTRINSIC_ATOMICS], [gcc atomic intrinsics])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ppc.h], [GCC_AND_POWERPC_ASM], [gcc PowerPC atomics])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_sicortex.h], [GCC_AND_SICORTEX_ASM], [gcc SiCortex atomics])
-fi
+
+OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intel_32_64.h], [GCC_X86_32_64], [gcc x86/x86_64 bit primitives])
+OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ia64.h], [GCC_AND_IA64_ASM], [gcc ia64 primitives])
+OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intrinsics.h], [GCC_INTRINSIC_ATOMICS], [gcc atomic intrinsics])
+OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ppc.h], [GCC_AND_POWERPC_ASM], [gcc PowerPC atomics])
+OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_sicortex.h], [GCC_AND_SICORTEX_ASM], [gcc SiCortex atomics])
+
 OPA_TRY_PRIMITIVE_HEADER([primitives/opa_nt_intrinsics.h], [NT_INTRINSICS], [Windows NT atomic intrinsics])
 OPA_TRY_PRIMITIVE_HEADER([primitives/opa_sun_atomic_ops.h], [SUN_ATOMIC_OPS], [Sun atomic operations library])
 
