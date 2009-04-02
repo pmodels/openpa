@@ -52,10 +52,35 @@ static inline int OPA_decr_and_test(OPA_int_t *ptr)
     return val == 1;
 }
 
+static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
+{
+    int prev;
+
+#if OPA_SIZEOF_INT == 8
+    __asm__ __volatile__ ("mov ar.ccv=%1;;"
+                          "cmpxchg8.rel %0=[%3],%4,ar.ccv"
+                          : "=r"(prev), "=m"(ptr->v)
+                          : "rO"(oldv), "r"(&ptr->v), "r"(newv)
+                          : "memory");
+    break;
+#elif OPA_SIZEOF_INT == 4
+    __asm__ __volatile__ ("zxt4 %1=%1;;" /* don't want oldv sign-extended to 64 bits */
+                          "mov ar.ccv=%1;;"
+                          "cmpxchg4.rel %0=[%3],%4,ar.ccv"
+                          : "=r"(prev), "=m"(ptr->v)
+                          : "r0"(oldv), "r"(&ptr->v), "r"(newv)
+                          : "memory");
+#else
+#error OPA_SIZEOF_INT is not 4 or 8
+#endif
+    
+    return prev;   
+}
+
 /* IA64 has a fetch-and-add instruction that only accepts immediate
    values of -16, -8, -4, -1, 1, 4, 8, and 16.  So we check for these
    values before falling back to the CAS implementation. */
-#define IA64_FAA_CASE_MACRO(ptr, val) case val: {       \
+#define OPA_IA64_FAA_CASE_MACRO(ptr, val) case val: {   \
     int prev;                                           \
     __asm__ __volatile__ ("fetchadd4.rel %0=[%2],%3"    \
                           : "=r"(prev), "=m"(ptr->v)    \
@@ -69,22 +94,29 @@ static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
     switch (val)
     {
-        IA64_FAA_CASE_MACRO(ptr, -16);
-        IA64_FAA_CASE_MACRO(ptr,  -8);
-        IA64_FAA_CASE_MACRO(ptr,  -4);
-        IA64_FAA_CASE_MACRO(ptr,  -1);
-        IA64_FAA_CASE_MACRO(ptr,   1);
-        IA64_FAA_CASE_MACRO(ptr,   4);
-        IA64_FAA_CASE_MACRO(ptr,   8);
-        IA64_FAA_CASE_MACRO(ptr,  16);
+        OPA_IA64_FAA_CASE_MACRO(ptr, -16);
+        OPA_IA64_FAA_CASE_MACRO(ptr,  -8);
+        OPA_IA64_FAA_CASE_MACRO(ptr,  -4);
+        OPA_IA64_FAA_CASE_MACRO(ptr,  -1);
+        OPA_IA64_FAA_CASE_MACRO(ptr,   1);
+        OPA_IA64_FAA_CASE_MACRO(ptr,   4);
+        OPA_IA64_FAA_CASE_MACRO(ptr,   8);
+        OPA_IA64_FAA_CASE_MACRO(ptr,  16);
     default:
-        /* FIXME calling this here and including opa_emulated.h at the end of
-         * the file causes a conflict.  Need to figure out the right combination
-         * of ordering, macros, and prototypes to make this all work correctly. */
-        return OPA_fetch_and_add_by_cas(ptr, val);
+        {
+            int cmp;
+            int prev = OPA_load(ptr);
+            
+            do {
+                cmp = prev;
+                prev = OPA_cas_int(ptr, cmp, val);
+            } while (prev != cmp);
+            
+            return prev;
+        }
     }
 }
-#undef IA64_FAA_CASE_MACRO
+#undef OPA_IA64_FAA_CASE_MACRO
 
 
 static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
@@ -94,34 +126,6 @@ static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
                           "cmpxchg8.rel %0=[%3],%4,ar.ccv"
                           : "=r"(prev), "=m"(ptr->v)
                           : "rO"(oldv), "r"(&ptr->v), "r"(newv));
-    return prev;   
-}
-
-static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
-{
-    int prev;
-
-    switch (sizeof(int)) /* this switch statement should be optimized out */
-    {
-    case 8:
-        __asm__ __volatile__ ("mov ar.ccv=%1;;"
-                              "cmpxchg8.rel %0=[%3],%4,ar.ccv"
-                              : "=r"(prev), "=m"(ptr->v)
-                              : "rO"(oldv), "r"(&ptr->v), "r"(newv)
-                              : "memory");
-        break;
-    case 4:
-        __asm__ __volatile__ ("zxt4 %1=%1;;" /* don't want oldv sign-extended to 64 bits */
-                              "mov ar.ccv=%1;;"
-                              "cmpxchg4.rel %0=[%3],%4,ar.ccv"
-                              : "=r"(prev), "=m"(ptr->v)
-                              : "r0"(oldv), "r"(&ptr->v), "r"(newv)
-                              : "memory");
-        break;
-    default:
-        OPA_Assertp(0);
-    }
-    
     return prev;   
 }
 
