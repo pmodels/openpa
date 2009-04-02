@@ -47,6 +47,11 @@ static inline void OPA_add_by_faa(OPA_int_t *ptr, int val)
     OPA_fetch_and_add(ptr, val);
 }
 
+static inline int OPA_incr_by_faa(OPA_int_t *ptr)
+{
+    return OPA_fetch_and_add(ptr, 1);
+}
+
 static inline void OPA_incr_by_add(OPA_int_t *ptr)
 {
     OPA_add(ptr, 1);
@@ -55,6 +60,11 @@ static inline void OPA_incr_by_add(OPA_int_t *ptr)
 static inline void OPA_incr_by_fai(OPA_int_t *ptr)
 {
     OPA_fetch_and_incr(ptr);
+}
+
+static inline int OPA_decr_by_faa(OPA_int_t *ptr)
+{
+    return OPA_fetch_and_add(ptr, -1);
 }
 
 static inline void OPA_decr_by_add(OPA_int_t *ptr)
