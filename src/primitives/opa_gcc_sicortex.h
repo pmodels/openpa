@@ -13,8 +13,33 @@
 
 #define OPA_UNIVERSAL_PRIMITIVE OPA_LL_SC
 
+/* FIXME do these need alignment? */
 typedef struct { volatile int v;  } OPA_int_t;
 typedef struct { int * volatile v; } OPA_ptr_t;
+
+/* Aligned loads and stores are atomic. */
+static inline int OPA_load(OPA_int_t *ptr)
+{
+    return ptr->v;
+}
+
+/* Aligned loads and stores are atomic. */
+static inline void OPA_store(OPA_int_t *ptr, int val)
+{
+    ptr->v = val;
+}
+
+/* Aligned loads and stores are atomic. */
+static inline void *OPA_load_ptr(OPA_ptr_t *ptr)
+{
+    return ptr->v;
+}
+
+/* Aligned loads and stores are atomic. */
+static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
+{
+    ptr->v = val;
+}
 
 #include <stdint.h>
 
@@ -316,7 +341,7 @@ static __inline__ long int shmemi_cswap_8(volatile long int * v, long int expect
 
 static __inline__ void OPA_add(OPA_int_t *ptr, int val)
 {
-    shmemi_fetch_add_4(ptr, val);
+    shmemi_fetch_add_4(&ptr->v, val);
 }
 
 static __inline__ void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
@@ -338,7 +363,6 @@ static __inline__ void OPA_decr(OPA_int_t *ptr)
     shmemi_fetch_add_4(&ptr->v, -1);
 }
 
-
 static __inline__ int OPA_decr_and_test(OPA_int_t *ptr)
 {
     int old = shmemi_fetch_add_4(&ptr->v, -1);
@@ -347,7 +371,7 @@ static __inline__ int OPA_decr_and_test(OPA_int_t *ptr)
 
 static __inline__ int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
-    return(shmemi_fetch_add(&ptr->v, val));
+    return(shmemi_fetch_add_4(&ptr->v, val));
 }
 
 static __inline__ int OPA_fetch_and_decr(OPA_int_t *ptr)
