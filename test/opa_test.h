@@ -26,6 +26,7 @@
 #ifdef OPA_TEST_NAIVE
 
 #define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
+#define ATOMIC_LL_SC_SUPPORTED
 
 typedef int OPA_int_t;
 typedef void *OPA_ptr_t;
@@ -71,6 +72,13 @@ static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 #define OPA_write_barrier() ((void) 0)
 #define OPA_read_barrier() ((void) 0)
 #define OPA_read_write_barrier() ((void) 0)
+
+/* For LL/SC only use load/store.  This is more naive than the above
+ * implementation for CAS */
+#define OPA_LL_int OPA_load
+#define OPA_SC_int OPA_store
+#define OPA_LL_ptr OPA_load_ptr
+#define OPA_SC_ptr OPA_store_ptr
 
 #endif /* OPA_TEST_NAIVE */
 
@@ -121,10 +129,10 @@ static const unsigned num_thread_tests = sizeof(num_threads) / sizeof(num_thread
  * Factor to reduce the number of iterations by for each test.  Must be the same
  * size as num_threads.
  */
-static const int iter_reduction[] = {1, 1, 1, 10};
+static const unsigned iter_reduction[] = {1, 1, 1, 10};
 
 /*
  * Other global variables.
  */
-static int curr_test;   /* Current test number bein run */
+static unsigned curr_test;   /* Current test number bein run */
 
