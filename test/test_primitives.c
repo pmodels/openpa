@@ -20,7 +20,7 @@
  * bottom half.  Therefore, for 4 byte ints the sequence of unique values is:
  * 0x00000000, 0x0000FFFF, 0x0001FFFE, 0x0002FFFD, etc. */
 #define LOADSTORE_INT_DIFF ((1 << (sizeof(int) * CHAR_BIT / 2)) - 1)
-#define LOADSTORE_INT_NITER 4000000
+#define LOADSTORE_INT_NITER (4000000 / iter_reduction[curr_test])
 typedef struct {
     OPA_int_t   *shared_val;    /* Shared int being read/written by all threads */
     int         unique_val;     /* This thread's unique value to store in shared_val */
@@ -28,15 +28,15 @@ typedef struct {
 
 /* Definitions for test_threaded_loadstore_ptr */
 #define LOADSTORE_PTR_DIFF (((unsigned long) 1 << (sizeof(void *) * CHAR_BIT / 2)) - 1)
-#define LOADSTORE_PTR_NITER 4000000
+#define LOADSTORE_PTR_NITER (4000000 / iter_reduction[curr_test])
 typedef struct {
     OPA_ptr_t   *shared_val;    /* Shared int being read/written by all threads */
     void        *unique_val;    /* This thread's unique value to store in shared_val */
 } loadstore_ptr_t;
 
 /* Definitions for test_threaded_add */
-#define ADD_EXPECTED 0
-#define ADD_NITER 2000000
+#define ADD_EXPECTED ADD_NITER
+#define ADD_NITER (2000000 / iter_reduction[curr_test])
 typedef struct {
     OPA_int_t   *shared_val;    /* Shared int being added to by all threads */
     int         unique_val;     /* This thread's unique value to add to shared_val */
@@ -44,11 +44,27 @@ typedef struct {
 
 /* Definitions for test_threaded_incr_decr */
 #define INCR_DECR_EXPECTED 0
-#define INCR_DECR_NITER 2000000
+#define INCR_DECR_NITER (2000000 / iter_reduction[curr_test])
 
 /* Definitions for test_threaded_decr_and_test */
 #define DECR_AND_TEST_NITER_INNER 20            /* *Must* be even */
-#define DECR_AND_TEST_NITER_OUTER 10000
+#define DECR_AND_TEST_NITER_OUTER (10000 / iter_reduction[curr_test])
+typedef struct {
+    OPA_int_t   *shared_val;    /* Shared int being decr and tested by all threads */
+    unsigned    ntrue;          /* # of times decr_and_test returned true */
+} decr_test_t;
+
+/* Definitions for test_threaded_faa */
+/* Uses definitions from test_threaded_add */
+
+/* Definitions for test_threaded_faa_ret */
+#define FAA_RET_EXPECTED (-((nthreads - 1) * FAA_RET_NITER))
+#define FAA_RET_NITER (2000000 / iter_reduction[curr_test])
+typedef struct {
+    OPA_int_t   *shared_val;    /* Shared int being added to by all threads */
+    OPA_int_t   *nerrors;       /* Number of errors */
+    OPA_int_t   *n1;            /* # of times faa returned 1 */
+} faa_ret_t;
 
 
 /*-------------------------------------------------------------------------
@@ -119,7 +135,7 @@ static void *threaded_loadstore_int_helper(void *_udata)
 {
     loadstore_int_t     *udata = (loadstore_int_t *)_udata;
     int                 loaded_val;
-    unsigned            niter = LOADSTORE_INT_NITER / iter_reduction[curr_test];
+    unsigned            niter = LOADSTORE_INT_NITER;
     unsigned            nerrors = 0;
     unsigned            i;
 
@@ -299,7 +315,7 @@ static void *threaded_loadstore_ptr_helper(void *_udata)
 {
     loadstore_ptr_t     *udata = (loadstore_ptr_t *)_udata;
     unsigned long       loaded_val;
-    int                 niter = LOADSTORE_PTR_NITER / iter_reduction[curr_test];
+    int                 niter = LOADSTORE_PTR_NITER;
     unsigned            nerrors = 0;
     unsigned            i;
 
@@ -496,7 +512,7 @@ error:
 static void *threaded_add_helper(void *_udata)
 {
     add_t               *udata = (add_t *)_udata;
-    unsigned            niter = ADD_NITER / iter_reduction[curr_test];
+    unsigned            niter = ADD_NITER;
     unsigned            i;
 
     /* Main loop */
@@ -550,14 +566,15 @@ static int test_threaded_add(void)
     pthread_attr_init(&ptattr);
     pthread_attr_setdetachstate(&ptattr, PTHREAD_CREATE_JOINABLE);
 
-    /* Set the initial state of the shared value (ADD_EXPECTED) */
-    OPA_store(&shared_val, ADD_EXPECTED);
+    /* Set the initial state of the shared value (0) */
+    OPA_store(&shared_val, 0);
 
     /* Create the threads.  All the unique values must add up to 0. */
     for(i=0; i<nthreads; i++) {
         thread_data[i].shared_val = &shared_val;
         thread_data[i].unique_val = i - (nthreads - 1) / 2
-                - (!(nthreads % 2) && (i >= nthreads / 2));
+                - (!(nthreads % 2) && (i >= nthreads / 2))
+                + (i == nthreads - 1);
         if(pthread_create(&threads[i], &ptattr, threaded_add_helper,
                 &thread_data[i])) TEST_ERROR;
     } /* end for */
@@ -615,7 +632,7 @@ error:
 static void *threaded_incr_helper(void *_shared_val)
 {
     OPA_int_t           *shared_val = (OPA_int_t *)_shared_val;
-    unsigned            niter = INCR_DECR_NITER / iter_reduction[curr_test];
+    unsigned            niter = INCR_DECR_NITER;
     unsigned            i;
 
     /* Main loop */
@@ -645,7 +662,7 @@ static void *threaded_incr_helper(void *_shared_val)
 static void *threaded_decr_helper(void *_shared_val)
 {
     OPA_int_t           *shared_val = (OPA_int_t *)_shared_val;
-    unsigned            niter = INCR_DECR_NITER / iter_reduction[curr_test];
+    unsigned            niter = INCR_DECR_NITER;
     unsigned            i;
 
     /* Main loop */
@@ -800,25 +817,19 @@ error:
  *
  *-------------------------------------------------------------------------
  */
-static void *threaded_decr_and_test_helper(void *_shared_val)
+static void *threaded_decr_and_test_helper(void *_udata)
 {
-    OPA_int_t           *shared_val = (OPA_int_t *)_shared_val;
-    unsigned            ntrue = 0;      /* Number of times decr_and_test returned true */
+    decr_test_t         *udata = (decr_test_t *)_udata;
     unsigned            i;
-    unsigned            *ret_value;
 
     /* Main loop */
     for(i=0; i<DECR_AND_TEST_NITER_INNER; i++)
         /* Add the unique value to the shared value */
-        if(OPA_decr_and_test(shared_val))
-            ntrue++;
-
-    /* Allocate space for the return value, and set it to ntrue */
-    if(ret_value = (unsigned *) malloc(sizeof(unsigned)))
-        *ret_value = ntrue;
+        if(OPA_decr_and_test(udata->shared_val))
+            udata->ntrue++;
 
     /* Exit */
-    pthread_exit(ret_value);
+    pthread_exit(NULL);
 } /* end threaded_decr_and_test_helper() */
 #endif /* OPA_HAVE_PTHREAD_H */
 
@@ -845,11 +856,12 @@ static int test_threaded_decr_and_test(void)
 #if defined(OPA_HAVE_PTHREAD_H)
     pthread_t           *threads = NULL; /* Threads */
     pthread_attr_t      ptattr;         /* Thread attributes */
+    decr_test_t         *thread_data = NULL; /* User data structs for each thread */
     OPA_int_t           shared_val;     /* Integer shared between threads */
     unsigned            *ntrue;         /* Number of times decr_and_test returned true */
     unsigned            ntrue_total;
     int                 starting_val;
-    unsigned            niter = DECR_AND_TEST_NITER_OUTER / iter_reduction[curr_test];
+    unsigned            niter = DECR_AND_TEST_NITER_OUTER;
     unsigned            nthreads = num_threads[curr_test];
     unsigned            nerrors = 0;
     unsigned            i, j;
@@ -859,6 +871,15 @@ static int test_threaded_decr_and_test(void)
     /* Allocate array of threads */
     if(NULL == (threads = (pthread_t *) malloc(nthreads * sizeof(pthread_t))))
         TEST_ERROR;
+
+    /* Allocate array of thread data */
+    if(NULL == (thread_data = (decr_test_t *) malloc(nthreads * sizeof(decr_test_t))))
+        TEST_ERROR;
+
+    /* Initialize the "shared_val" fields (ntrue will be initialized in the
+     * loop */
+    for(i=0; i<nthreads; i++)
+        thread_data[i].shared_val = &shared_val;
 
     /* Set threads to be joinable */
     pthread_attr_init(&ptattr);
@@ -872,28 +893,29 @@ static int test_threaded_decr_and_test(void)
         /* Set the initial state of the shared value (INCR_DECR_EXPECTED) */
         OPA_store(&shared_val, starting_val);
 
-        /* Create the threads.  All the unique values must add up to 0. */
-        for(j=0; j<nthreads; j++)
+        /* Create the threads.  Initialize each thread's "ntrue" field. */
+        for(j=0; j<nthreads; j++) {
+            thread_data[j].ntrue = 0;
             if(pthread_create(&threads[j], &ptattr, threaded_decr_and_test_helper,
-                    &shared_val)) TEST_ERROR;
+                    &thread_data[j])) TEST_ERROR;
+        } /* end for */
 
         /* Join the threads */
         ntrue_total = 0;
         for (j=0; j<nthreads; j++) {
             /* Join thread j */
-            if(pthread_join(threads[j], (void **) &ntrue)) TEST_ERROR;
+            if(pthread_join(threads[j], NULL)) TEST_ERROR;
 
             /* Verify that OPA_decr_and_test returned true at most once */
-            if(*ntrue > 1) {
+            if(thread_data[j].ntrue > 1) {
                 printf("\n    Unexpected return from thread %u: OPA_decr_and_test returned true %u times",
-                        j, *ntrue);
+                        j, thread_data[j].ntrue);
                 nerrors++;
             } /* end if */
 
             /* Update ntrue_total and free ntrue (which was allocated in the
              * thread routine) */
-            ntrue_total += *ntrue;
-            free(ntrue);
+            ntrue_total += thread_data[j].ntrue;
         } /* end for */
 
         /* Verify that OPA_decr_and_test returned true exactly once over all the
@@ -922,6 +944,7 @@ static int test_threaded_decr_and_test(void)
 
     /* Free memory */
     free(threads);
+    free(thread_data);
 
     PASSED();
 
@@ -936,9 +959,363 @@ static int test_threaded_decr_and_test(void)
 #if defined(OPA_HAVE_PTHREAD_H)
 error:
     if(threads) free(threads);
+    if(thread_data) free(thread_data);
     return 1;
 #endif /* OPA_HAVE_PTHREAD_H */
 } /* end test_threaded_decr_and_test() */
+
+
+/*-------------------------------------------------------------------------
+ * Function: test_simple_faa_fai_fad
+ *
+ * Purpose: Tests basic functionality of OPA_fetch_and_add,
+ *          OPA_fetch_and_incr and OPA_fetch_and_decr with a single
+ *          thread.  Does not test atomicity of operations.
+ *
+ * Return: Success: 0
+ *         Failure: 1
+ *
+ * Programmer: Neil Fortner
+ *             Thursday, April 23, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static int test_simple_faa_fai_fad(void)
+{
+    OPA_int_t   a;
+    int         result, expected;
+
+
+    TESTING("simple fetch and add/incr/decr functionality", 0);
+
+    /* Store 0 in a */
+    OPA_store(&a, 0);
+    expected = 0;
+
+    /* Add INT_MIN */
+    result = OPA_fetch_and_add(&a, INT_MIN);
+    if(result != expected) TEST_ERROR;
+    expected += INT_MIN;
+
+    /* Increment */
+    result = OPA_fetch_and_incr(&a);
+    if(result != expected) TEST_ERROR;
+    expected++;
+
+    /* Add INT_MAX */
+    result = OPA_fetch_and_add(&a, INT_MAX);
+    if(result != expected) TEST_ERROR;
+    expected += INT_MAX;
+
+    /* Decrement */
+    result = OPA_fetch_and_decr(&a);
+    if(result != expected) TEST_ERROR;
+    expected--;
+
+    /* Load the result, verify it is correct */
+    if(OPA_load(&a) != INT_MIN + 1 + INT_MAX - 1) TEST_ERROR;
+
+    /* Store 0 in a */
+    OPA_store(&a, 0);
+    expected = 0;
+
+    /* Add INT_MAX */
+    result = OPA_fetch_and_add(&a, INT_MAX);
+    if(result != expected) TEST_ERROR;
+    expected += INT_MAX;
+
+    /* Decrement */
+    result = OPA_fetch_and_decr(&a);
+    if(result != expected) TEST_ERROR;
+    expected--;
+
+    /* Add INT_MIN */
+    result = OPA_fetch_and_add(&a, INT_MIN);
+    if(result != expected) TEST_ERROR;
+    expected += INT_MIN;
+
+    /* Increment */
+    result = OPA_fetch_and_incr(&a);
+    if(result != expected) TEST_ERROR;
+    expected++;
+
+    /* Load the result, verify it is correct */
+    if(OPA_load(&a) != INT_MAX - 1 + INT_MIN + 1) TEST_ERROR;
+
+    PASSED();
+    return 0;
+
+error:
+    return 1;
+} /* end test_simple_faa_fai_fad() */
+
+
+#if defined(OPA_HAVE_PTHREAD_H)
+/*-------------------------------------------------------------------------
+ * Function: threaded_faa_helper
+ *
+ * Purpose: Helper (thread) routine for test_threaded_faa
+ *
+ * Return: NULL
+ *
+ * Programmer: Neil Fortner
+ *             Thursday, April 23, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static void *threaded_faa_helper(void *_udata)
+{
+    add_t               *udata = (add_t *)_udata;
+    unsigned            niter = ADD_NITER;
+    unsigned            i;
+
+    /* Main loop */
+    for(i=0; i<niter; i++)
+        /* Add the unique value to the shared value */
+        (void) OPA_fetch_and_add(udata->shared_val, udata->unique_val);
+
+    /* Exit */
+    pthread_exit(NULL);
+} /* end threaded_add_helper() */
+#endif /* OPA_HAVE_PTHREAD_H */
+
+
+/*-------------------------------------------------------------------------
+ * Function: test_threaded_faa
+ *
+ * Purpose: Tests atomicity of OPA_fetch_and_add.  Launches nthreads
+ *          threads, each of which repeatedly adds a unique number to a
+ *          shared variable.  Does not test return value of
+ *          OPA_fetch_and_add.  This is basically a copy of
+ *          test_threaded_add.
+ *
+ * Return: Success: 0
+ *         Failure: 1
+ *
+ * Programmer: Neil Fortner
+ *             Thursday, April 23, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static int test_threaded_faa(void)
+{
+#if defined(OPA_HAVE_PTHREAD_H)
+    pthread_t           *threads = NULL; /* Threads */
+    pthread_attr_t      ptattr;         /* Thread attributes */
+    add_t               *thread_data = NULL; /* User data structs for each thread */
+    OPA_int_t           shared_val;     /* Integer shared between threads */
+    unsigned            nthreads = num_threads[curr_test];
+    unsigned            i;
+
+    TESTING("fetch and add", nthreads);
+
+    /* Allocate array of threads */
+    if(NULL == (threads = (pthread_t *) malloc(nthreads * sizeof(pthread_t))))
+        TEST_ERROR;
+
+    /* Allocate array of thread data */
+    if(NULL == (thread_data = (add_t *) malloc(nthreads * sizeof(add_t))))
+        TEST_ERROR;
+
+    /* Set threads to be joinable */
+    pthread_attr_init(&ptattr);
+    pthread_attr_setdetachstate(&ptattr, PTHREAD_CREATE_JOINABLE);
+
+    /* Set the initial state of the shared value (0) */
+    OPA_store(&shared_val, 0);
+
+    /* Create the threads.  All the unique values must add up to 1. */
+    for(i=0; i<nthreads; i++) {
+        thread_data[i].shared_val = &shared_val;
+        thread_data[i].unique_val = i - (nthreads - 1) / 2
+                - (!(nthreads % 2) && (i >= nthreads / 2))
+                + (i == nthreads - 1);
+        if(pthread_create(&threads[i], &ptattr, threaded_faa_helper,
+                &thread_data[i])) TEST_ERROR;
+    } /* end for */
+
+    /* Free the attribute */
+    if(pthread_attr_destroy(&ptattr)) TEST_ERROR;
+
+    /* Join the threads */
+    for (i=0; i<nthreads; i++)
+        if(pthread_join(threads[i], NULL)) TEST_ERROR;
+
+    /* Verify that the shared value contains the expected result (0) */
+    if(OPA_load(&shared_val) != ADD_EXPECTED)
+        FAIL_OP_ERROR(printf("    Unexpected result: %d expected: %d\n",
+                OPA_load(&shared_val), ADD_EXPECTED));
+
+    /* Free memory */
+    free(threads);
+    free(thread_data);
+
+    PASSED();
+
+#else /* OPA_HAVE_PTHREAD_H */
+    TESTING("add", 0);
+    SKIPPED();
+    puts("    pthread.h not available");
+#endif /* OPA_HAVE_PTHREAD_H */
+
+    return 0;
+
+#if defined(OPA_HAVE_PTHREAD_H)
+error:
+    if(threads) free(threads);
+    if(thread_data) free(thread_data);
+    return 1;
+#endif /* OPA_HAVE_PTHREAD_H */
+} /* end test_threaded_faa() */
+
+
+#if defined(OPA_HAVE_PTHREAD_H)
+/*-------------------------------------------------------------------------
+ * Function: threaded_faa_ret_helper
+ *
+ * Purpose: Helper (thread) routine for test_threaded_faa_ret
+ *
+ * Return: NULL
+ *
+ * Programmer: Neil Fortner
+ *             Thursday, April 23, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static void *threaded_faa_ret_helper(void *_udata)
+{
+    faa_ret_t           *udata = (faa_ret_t *)_udata;
+    int                 ret, prev = INT_MAX;
+    unsigned            niter = FAA_RET_NITER;
+    unsigned            i;
+
+    /* Main loop */
+    for(i=0; i<niter; i++) {
+        /* Add -1 to the shared value */
+        ret = OPA_fetch_and_add(udata->shared_val, -1);
+
+        /* Verify that the value returned is less than the previous return */
+        if(ret >= prev) {
+            printf("\n    Unexpected return: %d is not less than %d  ", ret, prev);
+            OPA_incr(udata->nerrors);
+        } /* end if */
+
+        /* Check if the return value is 1 */
+        if(ret == 1)
+            OPA_incr(udata->n1);
+
+        /* update prev */
+        prev - ret;
+    } /* end for */
+
+    /* Exit */
+    pthread_exit(NULL);
+} /* end threaded_faa_ret_helper() */
+#endif /* OPA_HAVE_PTHREAD_H */
+
+
+/*-------------------------------------------------------------------------
+ * Function: test_threaded_faa_ret
+ *
+ * Purpose: Tests atomicity of OPA_fetch_and_add.  Launches nthreads
+ *          threads, each of which repeatedly adds -1 to a shared
+ *          variable.  Verifies that the value returned is always
+ *          decreasing, and that it returns 1 exactly once.
+ *
+ * Return: Success: 0
+ *         Failure: 1
+ *
+ * Programmer: Neil Fortner
+ *             Thursday, April 23, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static int test_threaded_faa_ret(void)
+{
+#if defined(OPA_HAVE_PTHREAD_H)
+    pthread_t           *threads = NULL; /* Threads */
+    pthread_attr_t      ptattr;         /* Thread attributes */
+    faa_ret_t           thread_data;    /* User data struct for all threads */
+    OPA_int_t           shared_val;     /* Integer shared between threads */
+    OPA_int_t           nerrors;        /* Number of errors */
+    OPA_int_t           n1;             /* # of times faa returned 1 */
+    unsigned            nthreads = num_threads[curr_test];
+    unsigned            i;
+
+    TESTING("fetch and add return values", nthreads);
+
+    /* Allocate array of threads */
+    if(NULL == (threads = (pthread_t *) malloc(nthreads * sizeof(pthread_t))))
+        TEST_ERROR;
+
+    /* Initialize thread data struct */
+    OPA_store(&shared_val, FAA_RET_NITER);
+    OPA_store(&nerrors, 0);
+    OPA_store(&n1, 0);
+    thread_data.shared_val = &shared_val;
+    thread_data.nerrors = &nerrors;
+    thread_data.n1 = &n1;
+
+    /* Set threads to be joinable */
+    pthread_attr_init(&ptattr);
+    pthread_attr_setdetachstate(&ptattr, PTHREAD_CREATE_JOINABLE);
+
+    /* Create the threads.  All the unique values must add up to 0. */
+    for(i=0; i<nthreads; i++)
+        if(pthread_create(&threads[i], &ptattr, threaded_faa_ret_helper,
+                &thread_data)) TEST_ERROR;
+
+    /* Free the attribute */
+    if(pthread_attr_destroy(&ptattr)) TEST_ERROR;
+
+    /* Join the threads */
+    for (i=0; i<nthreads; i++)
+        if(pthread_join(threads[i], NULL)) TEST_ERROR;
+
+    /* Verify that no errors were reported */
+    if(OPA_load(&nerrors))
+        FAIL_OP_ERROR(printf("    %d unexpected returns from OPA_fetch_and_add\n",
+                OPA_load(&nerrors)));
+
+    /* Verify that OPA_fetch_and_add returned 1 expactly once */
+    if(OPA_load(&n1) != 1)
+        FAIL_OP_ERROR(printf("    OPA_fetch_and_add returned 1 %d times.  Expected: 1\n",
+                OPA_load(&n1)));
+
+    /* Verify that the shared value contains the expected result (0) */
+    if(OPA_load(&shared_val) != FAA_RET_EXPECTED)
+        FAIL_OP_ERROR(printf("    Unexpected result: %d expected: %d\n",
+                OPA_load(&shared_val), FAA_RET_EXPECTED));
+
+    /* Free memory */
+    free(threads);
+
+    PASSED();
+
+#else /* OPA_HAVE_PTHREAD_H */
+    TESTING("add", 0);
+    SKIPPED();
+    puts("    pthread.h not available");
+#endif /* OPA_HAVE_PTHREAD_H */
+
+    return 0;
+
+#if defined(OPA_HAVE_PTHREAD_H)
+error:
+    if(threads) free(threads);
+    return 1;
+#endif /* OPA_HAVE_PTHREAD_H */
+} /* end test_threaded_faa_ret() */
 
 
 /*-------------------------------------------------------------------------
@@ -966,6 +1343,7 @@ int main(int argc, char **argv)
     nerrors += test_simple_loadstore_ptr();
     nerrors += test_simple_add_incr_decr();
     nerrors += test_simple_decr_and_test();
+    nerrors += test_simple_faa_fai_fad();
 
     /* Loop over test configurations */
     for(curr_test=0; curr_test<num_thread_tests; curr_test++) {
@@ -975,6 +1353,8 @@ int main(int argc, char **argv)
         nerrors += test_threaded_add();
         nerrors += test_threaded_incr_decr();
         nerrors += test_threaded_decr_and_test();
+        nerrors += test_threaded_faa();
+        nerrors += test_threaded_faa_ret();
     }
 
     if(nerrors)
