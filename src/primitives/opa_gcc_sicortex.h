@@ -1,5 +1,5 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*  
+/*
  *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
@@ -44,7 +44,7 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 /* ICE9 rev A1 chips have a low-frequency bug that causes LL to
    fail. The workaround is to do the LL twice to make sure the data
    is in L1
-  
+
    very few systems are affected
 
    FIXME We should either remove the workaround entirely or make it
@@ -57,7 +57,7 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 
    relevant excerpt:
        I - A signed 16-bit constant (for arithmetic instructions).
-       J - Integer zero. 
+       J - Integer zero.
 
    Other inline asm knowledge worth remembering:
        r - a general register operand is allowed
@@ -332,11 +332,6 @@ static __inline__ long int shmemi_cswap_8(volatile long int * v, long int expect
         return result;
 }
 
-#if !defined(_MIPS_SZPTR)
-#  error "_MIPS_SZPTR must be defined!"
-#endif
-
-
 static __inline__ void OPA_add(OPA_int_t *ptr, int val)
 {
     shmemi_fetch_add_4(&ptr->v, val);
@@ -344,10 +339,12 @@ static __inline__ void OPA_add(OPA_int_t *ptr, int val)
 
 static __inline__ void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
-#if (_MIPS_SZPTR == 64)
+#if (OPA_SIZEOF_VOID_P == 8)
     return((int *) shmemi_cswap_8((volatile long int *) &ptr->v, (uintptr_t) oldv, (uintptr_t) newv));
-#else
+#elif (OPA_SIZEOF_VOID_P == 4)
     return((int *) shmemi_cswap_4((volatile int *) &ptr->v, (uintptr_t) oldv, (uintptr_t) newv));
+#else
+#error "OPA_SIZEOF_VOID_P has an unexpected value :" OPA_QUOTE(OPA_SIZEOF_VOID_P);
 #endif
 }
 
@@ -389,10 +386,12 @@ static __inline__ void OPA_incr(OPA_int_t *ptr)
 
 static __inline__ int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val)
 {
-#if (_MIPS_SZPTR == 64)
-    return((int *) shmemi_swap_8((long int *) &ptr->v, (uintptr_t) val));
+#if (OPA_SIZEOF_VOID_P == 8)
+    return((int *) shmemi_swap_8((volatile long int *) &ptr->v, (uintptr_t) val));
+#elif (OPA_SIZEOF_VOID_P == 4)
+    return((int *) shmemi_swap_4((volatile int *) &ptr->v, (uintptr_t) val));
 #else
-    return((int *) shmemi_swap_4((int *) &ptr->v, (uintptr_t) val));
+#error "OPA_SIZEOF_VOID_P has an unexpected value :" OPA_QUOTE(OPA_SIZEOF_VOID_P);
 #endif
 }
 
