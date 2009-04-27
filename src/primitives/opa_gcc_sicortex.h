@@ -155,7 +155,7 @@ static inline long int OPA_shmemi_fetch_add_8(volatile long int * v, long int in
 }
 
 /* Atomic swap of a 32 bit value, returning the old contents */
-static inline int OPA_shmemi_swap_4(volatile int * v, int new)
+static inline int OPA_shmemi_swap_4(volatile int * v, int val)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -173,7 +173,7 @@ static inline int OPA_shmemi_swap_4(volatile int * v, int new)
                 "       .set    reorder                                 \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new)
+                : "r" (val)
                 : "memory");
         } else {
                 unsigned long temp;
@@ -189,7 +189,7 @@ static inline int OPA_shmemi_swap_4(volatile int * v, int new)
                 "       .set    reorder                                 \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new)
+                : "r" (val)
                 : "memory");
         }
 
@@ -197,7 +197,7 @@ static inline int OPA_shmemi_swap_4(volatile int * v, int new)
 }
 
 /* Atomic swap of a 64 bit value, returning the old contents */
-static inline long int OPA_shmemi_swap_8(volatile long int * v, long int new)
+static inline long int OPA_shmemi_swap_8(volatile long int * v, long int val)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -215,7 +215,7 @@ static inline long int OPA_shmemi_swap_8(volatile long int * v, long int new)
                 "       .set    reorder                                 \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new)
+                : "r" (val)
                 : "memory");
         } else {
                 unsigned long temp;
@@ -231,7 +231,7 @@ static inline long int OPA_shmemi_swap_8(volatile long int * v, long int new)
                 "       .set    reorder                                 \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new)
+                : "r" (val)
                 : "memory");
         }
 
@@ -239,8 +239,8 @@ static inline long int OPA_shmemi_swap_8(volatile long int * v, long int new)
 }
 
 /* Atomic compare and swap of a 32 bit value, returns the old value
- * but only does the store of the new value if the old value == expect */
-static inline int OPA_shmemi_cswap_4(volatile int * v, int expect, int new)
+ * but only does the store of the val value if the old value == expect */
+static inline int OPA_shmemi_cswap_4(volatile int * v, int expect, int val)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -260,7 +260,7 @@ static inline int OPA_shmemi_cswap_4(volatile int * v, int expect, int new)
                 "1:                                                     \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new), "Jr" (expect)
+                : "r" (val), "Jr" (expect)
                 : "memory");
         } else {
                 unsigned long temp;
@@ -278,7 +278,7 @@ static inline int OPA_shmemi_cswap_4(volatile int * v, int expect, int new)
                 "1:                                                     \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new), "Jr" (expect)
+                : "r" (val), "Jr" (expect)
                 : "memory");
         }
 
@@ -286,8 +286,8 @@ static inline int OPA_shmemi_cswap_4(volatile int * v, int expect, int new)
 }
 
 /* Atomic compare and swap of a 64 bit value, returns the old value
- * but only does the store of the new value if the old value == expect */
-static inline long int OPA_shmemi_cswap_8(volatile long int * v, long int expect, long int new)
+ * but only does the store of the val value if the old value == expect */
+static inline long int OPA_shmemi_cswap_8(volatile long int * v, long int expect, long int val)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -307,7 +307,7 @@ static inline long int OPA_shmemi_cswap_8(volatile long int * v, long int expect
                 "1:                                                     \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new), "Jr" (expect)
+                : "r" (val), "Jr" (expect)
                 : "memory");
         } else {
                 unsigned long temp;
@@ -325,7 +325,7 @@ static inline long int OPA_shmemi_cswap_8(volatile long int * v, long int expect
                 "1:                                                     \n"
                 "       .set    mips0                                   \n"
                 : "=&r" (result), "=&r" (temp), "=m" (*v)
-                : "r" (new), "Jr" (expect)
+                : "r" (val), "Jr" (expect)
                 : "memory");
         }
 
