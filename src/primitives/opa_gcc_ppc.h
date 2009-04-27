@@ -68,7 +68,7 @@ static inline int OPA_SC_ptr(OPA_ptr_t *ptr, void *val)
 }
 
 /* necessary to enable LL/SC emulation support */
-#define OPA_ATOMIC_LL_SC_SUPPORTED 1
+#define OPA_LL_SC_SUPPORTED 1
 
 /* Implement all function using LL/SC */
 #define OPA_add_by_llsc            OPA_add
