@@ -45,7 +45,7 @@ AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h])
 AC_C_RESTRICT
 AC_C_INLINE
 
-dnl Check for presence f the pthreads library.  This is needed by the test
+dnl Check for presence of the pthreads library.  This is needed by the test
 dnl suite.
 AC_CHECK_LIB(pthread, pthread_create)
 
@@ -81,30 +81,52 @@ AC_MSG_CHECKING([if compiler rejects bogus asm statements])
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[
     __asm__ __volatile__ ("ILLEGAL_ASM_STMT");
   ]])],
-  compiler_rejects_bogus_asm=0
+  compiler_rejects_bogus_asm=no
   AC_MSG_RESULT([no])
   ,
-  compiler_rejects_bogus_asm=1
+  compiler_rejects_bogus_asm=yes
   AC_MSG_RESULT([yes])
 )
 
+AC_ARG_WITH(atomic-primitives, AC_HELP_STRING([--with-atomic-primitives],
+    [force OPA to use a specific atomic primitives implementation file (default is auto).  A value of 'no' forces the use of locks to implement atomic primitives.  Note that using locks to implement atomic primitives will have a substantial impact on performance and is intended for testing only.]),
+    if test "$with_atomic_primitives" = "yes" ; then with_atomic_primitives=auto; fi
+    , 
+    with_atomic_primitives=auto
+)
 
-dnl is set to 1 by the macro below if any test ever succeeds
-non_emulated_primitives_available=0
+
+if test "$with_atomic_primitives" = "no" ; then
+    AC_MSG_WARN([
+===================================================
+Using locks to implement atomic primitives.  This 
+will result in a substantial impact on performance.
+Use this only for testing.
+===================================================])
+fi
+
+dnl is set to yes by the macro below if any test ever succeeds
+non_emulated_primitives_available=no
+dnl is set to yes in OPA_TRY_PRIMITIVE_HEADER when a primitive
+dnl matching $with_atomic_primitives is checked
+checked_specified_primitive=no
+
 dnl OPA_TRY_PRIMITIVE_HEADER([header file from src/ dir], [HAVE_ macro suffix], [feature description])
 dnl FIXME should probably change this to do an AC_TRY_RUN with the existing code
 dnl used as a fallback when cross-compiling.  This will provide us with a
 dnl stronger guaranted that the code really works on the given platform.
 AC_DEFUN([OPA_TRY_PRIMITIVE_HEADER],[
-AC_MSG_CHECKING([for support for $3])
-SAVE_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -I${srcdir}/src"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+if test "$with_atomic_primitives" = "auto" -o "$with_atomic_primitives" = "$1" ; then
+    checked_specified_primitive=yes
+    AC_MSG_CHECKING([for support for $3])
+    SAVE_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -I${srcdir}/src"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
     #define OPA_SIZEOF_INT SIZEOF_INT
     #define OPA_SIZEOF_VOID_P SIZEOF_VOID_P
     #include "opa_util.h" /* for ATTRIBUTE and friends */
-    #include "$1"
-]],[[
+    #include "primitives/$1"
+    ]],[[
     OPA_int_t a, b;
     int c;
 
@@ -127,14 +149,21 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[
     OPA_write_barrier();
     OPA_read_barrier();
     OPA_read_write_barrier();
- ]])]
-,AC_DEFINE(HAVE_$2, 1, [define to 1 if we have support for $3])
-non_emulated_primitives_available=1
-AC_MSG_RESULT([yes]),
-AC_MSG_RESULT([no]))
-CFLAGS="$SAVE_CFLAGS"
+     ]])]
+    ,
+        AC_DEFINE(HAVE_$2, 1, [define to 1 if we have support for $3])
+        non_emulated_primitives_available=yes
+        AC_MSG_RESULT([yes])
+    ,
+        AC_MSG_RESULT([no])
+    )
+    CFLAGS="$SAVE_CFLAGS"
+fi
 ])
 
+if test "$with_atomic_primitives" = "no" ; then
+    AC_DEFINE(USE_LOCK_BASED_PRIMITIVES, 1, [define to 1 to force using lock-based atomic primitives])
+else
 dnl We currently test for support of each platform or implementation by
 dnl attempting to compile the associated primitives header file.  This doesn't
 dnl feel right, but it's actually pretty effective while being fairly easy to
@@ -146,26 +175,27 @@ dnl
 dnl If the compiler can't tell that it's getting bad assembly, we have
 dnl no hope of being able to check what asm statements are supported
 dnl without AC_TRY_RUN().
-if test "$compiler_rejects_bogus_asm" = "1"  ; then 
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intel_32_64.h], [GCC_X86_32_64], [gcc x86/x86_64 bit primitives])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ia64.h], [GCC_AND_IA64_ASM], [gcc ia64 primitives])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_ppc.h], [GCC_AND_POWERPC_ASM], [gcc PowerPC atomics])
-    OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_sicortex.h], [GCC_AND_SICORTEX_ASM], [gcc SiCortex atomics])
+    if test "$compiler_rejects_bogus_asm" = "yes"  ; then 
+        OPA_TRY_PRIMITIVE_HEADER([opa_gcc_intel_32_64.h], [GCC_X86_32_64], [gcc x86/x86_64 bit primitives])
+        OPA_TRY_PRIMITIVE_HEADER([opa_gcc_ia64.h], [GCC_AND_IA64_ASM], [gcc ia64 primitives])
+        OPA_TRY_PRIMITIVE_HEADER([opa_gcc_ppc.h], [GCC_AND_POWERPC_ASM], [gcc PowerPC atomics])
+        OPA_TRY_PRIMITIVE_HEADER([opa_gcc_sicortex.h], [GCC_AND_SICORTEX_ASM], [gcc SiCortex atomics])
+    fi
+
+    OPA_TRY_PRIMITIVE_HEADER([opa_gcc_intrinsics.h], [GCC_INTRINSIC_ATOMICS], [gcc atomic intrinsics])
+    OPA_TRY_PRIMITIVE_HEADER([opa_nt_intrinsics.h], [NT_INTRINSICS], [Windows NT atomic intrinsics])
+    OPA_TRY_PRIMITIVE_HEADER([opa_sun_atomic_ops.h], [SUN_ATOMIC_OPS], [Sun atomic operations library])
+
+    if test "$checked_specified_primitive" = "no" ; then
+        AC_MSG_ERROR([didn't find specified atomic primitives file "$with_atomic_primitives"], 1)
+    fi
+
+    if test "$non_emulated_primitives_available" = "no" ; then
+        AC_MSG_ERROR([No native supported atomic primitives were detected.  You can
+use "--with-atomic-primitives=no" to emulate the atomic primitives using locks,
+but note that doing this will result in a substantial performance penalty.], 1)
+    fi
 fi
-
-OPA_TRY_PRIMITIVE_HEADER([primitives/opa_gcc_intrinsics.h], [GCC_INTRINSIC_ATOMICS], [gcc atomic intrinsics])
-OPA_TRY_PRIMITIVE_HEADER([primitives/opa_nt_intrinsics.h], [NT_INTRINSICS], [Windows NT atomic intrinsics])
-OPA_TRY_PRIMITIVE_HEADER([primitives/opa_sun_atomic_ops.h], [SUN_ATOMIC_OPS], [Sun atomic operations library])
-
-if test "$non_emulated_primitives_available" = "0" ; then
-    AC_MSG_WARN([
-=======================================================================
-  No native atomic primitives were detected.  OpenPA will use locks to
-  emulate atomic behavior.  This will almost certainly result in very
-  poor performance.  Please make sure that this is expected behavior!
-=======================================================================])
-fi
-
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 AC_OUTPUT
 

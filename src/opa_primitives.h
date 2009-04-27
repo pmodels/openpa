@@ -78,14 +78,10 @@
 #include "primitives/opa_sun_atomic_ops.h"
 #elif defined(OPA_HAVE_NT_INTRINSICS)
 #include "primitives/opa_nt_intrinsics.h"
-#else
-/* No architecture specific atomics, using lock-based emulated
-   implementations */
-
-/* This is defined to ensure that interprocess locks are properly
-   initialized. */
-#define OPA_USE_EMULATION
+#elif defined(OPA_USE_LOCK_BASED_PRIMITIVES)
 #include "primitives/opa_by_lock.h"
+#else
+#error no primitives implementation specified
 #endif
 
 /*
@@ -95,7 +91,7 @@
     shared memory region, we need a shared memory backed lock mechanism.
 
     This routine must be called by any subsystem that intends to use the atomic
-    abstractions if the cpp directive OPA_USE_EMULATION is defined.  It must
+    abstractions if the cpp directive OPA_USE_LOCK_BASED_PRIMITIVES is defined.  It must
     be called exactly once by _all_ processes, not just a single leader.  This
     function will initialize the contents of the lock variable if the caller
     specifies (isLeader==true).  Note that multiple initialization is forbidden
