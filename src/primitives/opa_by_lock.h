@@ -1,5 +1,5 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
-/*  
+/*
  *  (C) 2008 by Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
@@ -14,7 +14,7 @@
 #include <pthread.h>
 
 /* defined in opa_primitives.c */
-pthread_mutex_t *OPA_emulation_lock;
+extern pthread_mutex_t *OPA_emulation_lock;
 
 /* FIXME these make less sense now that OPA is not inside of MPICH2.  Is there a
    simpler name/scheme that could be used here instead? [goodell@ 2009-02-19] */
