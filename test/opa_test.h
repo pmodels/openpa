@@ -28,8 +28,8 @@
 #define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
 #define OPA_ATOMIC_LL_SC_SUPPORTED
 
-typedef int OPA_int_t;
-typedef void *OPA_ptr_t;
+typedef volatile int OPA_int_t;
+typedef void * volatile OPA_ptr_t;
 
 #define OPA_load(A) (*(A))
 #define OPA_store(A, B) ((void) (*(A) = (B)))
