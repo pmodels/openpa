@@ -50,10 +50,6 @@ typedef struct { int * volatile v; } OPA_ptr_t;
     reference for the exact semantics of our OPA_* ops.
 */
 
-/* We don't actually implement CAS natively, but we do support all the non-LL/SC
-   primitives including CAS. */
-#define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
-
 static inline int OPA_load(OPA_int_t *ptr)
 {
     int retval;

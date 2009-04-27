@@ -61,16 +61,7 @@
    static inline void *OPA_LL_ptr(OPA_ptr_t *ptr);
    static inline int OPA_SC_ptr(OPA_ptr_t *ptr, void *val);
 
-   OPA_UNIVERSAL_PRIMITIVE should be defined to be one of:
-     OPA_CAS
-     OPA_LL_SC
-     OPA_NO_UNIVERSAL
 */
-enum OPA_Universal_primitive_type {
-    OPA_NO_UNIVERSAL = 0,
-    OPA_CAS          = 1,
-    OPA_LL_SC        = 2
-};
 
 /* Include the appropriate header for the architecture */
 #if   defined(OPA_HAVE_GCC_AND_POWERPC_ASM)

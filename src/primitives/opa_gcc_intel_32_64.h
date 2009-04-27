@@ -7,8 +7,6 @@
 #ifndef OPA_GCC_INTEL_32_64_H_INCLUDED
 #define OPA_GCC_INTEL_32_64_H_INCLUDED
 
-#define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
-
 #ifndef OPA_SIZEOF_INT
 #error OPA_SIZEOF_INT is not defined
 #endif

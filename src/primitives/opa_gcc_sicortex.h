@@ -11,8 +11,6 @@
 #ifndef OPA_GCC_SICORTEX_H
 #define OPA_GCC_SICORTEX_H
 
-#define OPA_UNIVERSAL_PRIMITIVE OPA_LL_SC
-
 /* FIXME do these need alignment? */
 typedef struct { volatile int v;  } OPA_int_t;
 typedef struct { int * volatile v; } OPA_ptr_t;
