@@ -26,7 +26,7 @@
 #ifdef OPA_TEST_NAIVE
 
 #define OPA_UNIVERSAL_PRIMITIVE OPA_CAS
-#define ATOMIC_LL_SC_SUPPORTED
+#define OPA_ATOMIC_LL_SC_SUPPORTED
 
 typedef int OPA_int_t;
 typedef void *OPA_ptr_t;

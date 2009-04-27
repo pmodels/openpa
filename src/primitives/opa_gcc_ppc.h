@@ -67,8 +67,10 @@ static inline int OPA_SC_ptr(OPA_ptr_t *ptr, void *val)
     return OPA_SC_int((OPA_int_t *)ptr, (int)val);
 }
 
-/* Implement all function using LL/SC */
+/* necessary to enable LL/SC emulation support */
+#define OPA_ATOMIC_LL_SC_SUPPORTED 1
 
+/* Implement all function using LL/SC */
 #define OPA_add_by_llsc            OPA_add
 #define OPA_incr_by_llsc           OPA_incr
 #define OPA_decr_by_llsc           OPA_decr

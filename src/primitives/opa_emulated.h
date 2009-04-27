@@ -109,7 +109,7 @@ static inline int OPA_swap_int_by_cas(OPA_int_t *ptr, int val)
 
 /* Emulating using LL/SC */
 
-#ifdef ATOMIC_LL_SC_SUPPORTED
+#if defined(OPA_ATOMIC_LL_SC_SUPPORTED)
 static inline int OPA_fetch_and_add_by_llsc(OPA_int_t *ptr, int val)
 {
     int prev;
@@ -189,7 +189,7 @@ static inline int OPA_swap_int_by_llsc(OPA_int_t *ptr, int val)
     return prev;
 }
 
-#endif /* ATOMIC_LL_SC_SUPPORTED */
+#endif /* OPA_ATOMIC_LL_SC_SUPPORTED */
 
 
 #endif /* OPA_EMULATED_H_INCLUDED */
