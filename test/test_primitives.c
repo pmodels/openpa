@@ -1337,6 +1337,10 @@ error:
 int main(int argc, char **argv)
 {
     unsigned nerrors = 0;
+#if defined(OPA_USE_LOCK_BASED_PRIMITIVES)
+    pthread_mutex_t shm_lock;
+    OPA_Interprocess_lock_init(&shm_lock, 1/*isLeader*/);
+#endif
 
     /* Simple tests */
     nerrors += test_simple_loadstore_int();
