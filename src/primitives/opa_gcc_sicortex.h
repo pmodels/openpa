@@ -71,7 +71,7 @@ static inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
  */
 
 /* Atomic increment of a 32 bit value, returning the old value */
-static __inline__ int shmemi_fetch_add_4(volatile int * v, int inc)
+static inline int OPA_shmemi_fetch_add_4(volatile int * v, int inc)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -113,7 +113,7 @@ static __inline__ int shmemi_fetch_add_4(volatile int * v, int inc)
 }
 
 /* Atomic increment of a 64 bit value, returning the old value */
-static __inline__ long int shmemi_fetch_add_8(volatile long int * v, long int inc)
+static inline long int OPA_shmemi_fetch_add_8(volatile long int * v, long int inc)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -155,7 +155,7 @@ static __inline__ long int shmemi_fetch_add_8(volatile long int * v, long int in
 }
 
 /* Atomic swap of a 32 bit value, returning the old contents */
-static __inline__ int shmemi_swap_4(volatile int * v, int new)
+static inline int OPA_shmemi_swap_4(volatile int * v, int new)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -197,7 +197,7 @@ static __inline__ int shmemi_swap_4(volatile int * v, int new)
 }
 
 /* Atomic swap of a 64 bit value, returning the old contents */
-static __inline__ long int shmemi_swap_8(volatile long int * v, long int new)
+static inline long int OPA_shmemi_swap_8(volatile long int * v, long int new)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -240,7 +240,7 @@ static __inline__ long int shmemi_swap_8(volatile long int * v, long int new)
 
 /* Atomic compare and swap of a 32 bit value, returns the old value
  * but only does the store of the new value if the old value == expect */
-static __inline__ int shmemi_cswap_4(volatile int * v, int expect, int new)
+static inline int OPA_shmemi_cswap_4(volatile int * v, int expect, int new)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -287,7 +287,7 @@ static __inline__ int shmemi_cswap_4(volatile int * v, int expect, int new)
 
 /* Atomic compare and swap of a 64 bit value, returns the old value
  * but only does the store of the new value if the old value == expect */
-static __inline__ long int shmemi_cswap_8(volatile long int * v, long int expect, long int new)
+static inline long int OPA_shmemi_cswap_8(volatile long int * v, long int expect, long int new)
 {
         unsigned long result;
         if (ICE9A_LLSC_WAR) {
@@ -332,72 +332,72 @@ static __inline__ long int shmemi_cswap_8(volatile long int * v, long int expect
         return result;
 }
 
-static __inline__ void OPA_add(OPA_int_t *ptr, int val)
+static inline void OPA_add(OPA_int_t *ptr, int val)
 {
-    shmemi_fetch_add_4(&ptr->v, val);
+    OPA_shmemi_fetch_add_4(&ptr->v, val);
 }
 
-static __inline__ void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
+static inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
 #if (OPA_SIZEOF_VOID_P == 8)
-    return((int *) shmemi_cswap_8((volatile long int *) &ptr->v, (uintptr_t) oldv, (uintptr_t) newv));
+    return((int *) OPA_shmemi_cswap_8((volatile long int *) &ptr->v, (uintptr_t) oldv, (uintptr_t) newv));
 #elif (OPA_SIZEOF_VOID_P == 4)
-    return((int *) shmemi_cswap_4((volatile int *) &ptr->v, (uintptr_t) oldv, (uintptr_t) newv));
+    return((int *) OPA_shmemi_cswap_4((volatile int *) &ptr->v, (uintptr_t) oldv, (uintptr_t) newv));
 #else
 #error "OPA_SIZEOF_VOID_P has an unexpected value :" OPA_QUOTE(OPA_SIZEOF_VOID_P);
 #endif
 }
 
-static __inline__ int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
+static inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
-    return(shmemi_cswap_4(&ptr->v, oldv, newv));
+    return(OPA_shmemi_cswap_4(&ptr->v, oldv, newv));
 }
 
-static __inline__ void OPA_decr(OPA_int_t *ptr)
+static inline void OPA_decr(OPA_int_t *ptr)
 {
-    shmemi_fetch_add_4(&ptr->v, -1);
+    OPA_shmemi_fetch_add_4(&ptr->v, -1);
 }
 
-static __inline__ int OPA_decr_and_test(OPA_int_t *ptr)
+static inline int OPA_decr_and_test(OPA_int_t *ptr)
 {
-    int old = shmemi_fetch_add_4(&ptr->v, -1);
+    int old = OPA_shmemi_fetch_add_4(&ptr->v, -1);
     return (old == 1);
 }
 
-static __inline__ int OPA_fetch_and_add(OPA_int_t *ptr, int val)
+static inline int OPA_fetch_and_add(OPA_int_t *ptr, int val)
 {
-    return(shmemi_fetch_add_4(&ptr->v, val));
+    return(OPA_shmemi_fetch_add_4(&ptr->v, val));
 }
 
-static __inline__ int OPA_fetch_and_decr(OPA_int_t *ptr)
+static inline int OPA_fetch_and_decr(OPA_int_t *ptr)
 {
-    return(shmemi_fetch_add_4(&ptr->v, -1));
+    return(OPA_shmemi_fetch_add_4(&ptr->v, -1));
 }
 
-static __inline__ int OPA_fetch_and_incr(OPA_int_t *ptr)
+static inline int OPA_fetch_and_incr(OPA_int_t *ptr)
 {
-    return(shmemi_fetch_add_4(&ptr->v, 1));
+    return(OPA_shmemi_fetch_add_4(&ptr->v, 1));
 }
 
-static __inline__ void OPA_incr(OPA_int_t *ptr)
+static inline void OPA_incr(OPA_int_t *ptr)
 {
-    shmemi_fetch_add_4(&ptr->v, 1);
+    OPA_shmemi_fetch_add_4(&ptr->v, 1);
 }
 
-static __inline__ int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val)
+static inline int *OPA_swap_ptr(OPA_ptr_t *ptr, int *val)
 {
 #if (OPA_SIZEOF_VOID_P == 8)
-    return((int *) shmemi_swap_8((volatile long int *) &ptr->v, (uintptr_t) val));
+    return((int *) OPA_shmemi_swap_8((volatile long int *) &ptr->v, (uintptr_t) val));
 #elif (OPA_SIZEOF_VOID_P == 4)
-    return((int *) shmemi_swap_4((volatile int *) &ptr->v, (uintptr_t) val));
+    return((int *) OPA_shmemi_swap_4((volatile int *) &ptr->v, (uintptr_t) val));
 #else
 #error "OPA_SIZEOF_VOID_P has an unexpected value :" OPA_QUOTE(OPA_SIZEOF_VOID_P);
 #endif
 }
 
-static __inline__ int OPA_swap_int(OPA_int_t *ptr, int val)
+static inline int OPA_swap_int(OPA_int_t *ptr, int val)
 {
-    return(shmemi_swap_4(&ptr->v, val));
+    return(OPA_shmemi_swap_4(&ptr->v, val));
 }
 
 #define OPA_write_barrier()      __asm__ __volatile__  ("sync" ::: "memory" )
