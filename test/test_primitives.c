@@ -43,7 +43,7 @@ typedef struct {
 } add_t;
 
 /* Definitions for test_threaded_incr_decr */
-#define INCR_DECR_EXPECTED 0
+#define INCR_DECR_EXPECTED INCR_DECR_NITER
 #define INCR_DECR_NITER (2000000 / iter_reduction[curr_test])
 
 /* Definitions for test_threaded_decr_and_test */
@@ -702,9 +702,9 @@ static int test_threaded_incr_decr(void)
     unsigned            nthreads = num_threads[curr_test];
     unsigned            i;
 
-    /* Must use an even number of threads */
-    if(nthreads & 1)
-        nthreads--;
+    /* Must use an odd number of threads */
+    if(!(nthreads & 1))
+        nthreads++;
 
     TESTING("incr and decr", nthreads);
 
@@ -716,16 +716,16 @@ static int test_threaded_incr_decr(void)
     pthread_attr_init(&ptattr);
     pthread_attr_setdetachstate(&ptattr, PTHREAD_CREATE_JOINABLE);
 
-    /* Set the initial state of the shared value (INCR_DECR_EXPECTED) */
-    OPA_store(&shared_val, INCR_DECR_EXPECTED);
+    /* Set the initial state of the shared value (0) */
+    OPA_store(&shared_val, 0);
 
     /* Create the threads.  All the unique values must add up to 0. */
     for(i=0; i<nthreads; i++) {
         if(i & 1) {
-            if(pthread_create(&threads[i], &ptattr, threaded_incr_helper,
+            if(pthread_create(&threads[i], &ptattr, threaded_decr_helper,
                     &shared_val)) TEST_ERROR;
         } else
-            if(pthread_create(&threads[i], &ptattr, threaded_decr_helper,
+            if(pthread_create(&threads[i], &ptattr, threaded_incr_helper,
                     &shared_val)) TEST_ERROR;
     } /* end for */
 

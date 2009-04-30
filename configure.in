@@ -49,6 +49,36 @@ dnl Check for presence of the pthreads library.  This is needed by the test
 dnl suite.
 AC_CHECK_LIB(pthread, pthread_create)
 
+if test "$ac_cv_lib_pthread_pthread_create" = yes; then
+AC_MSG_CHECKING([if 100 threads can be run at once])
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+    #include <stddef.h>
+    #include <pthread.h>
+    pthread_mutex_t mutexus_maximus;
+    void *thread_func(void *udata) {
+        pthread_mutex_lock(&mutexus_maximus);
+        pthread_mutex_unlock(&mutexus_maximus);
+        return NULL;
+    }
+]], [[
+    int i;
+    pthread_t threads[100];
+    pthread_mutex_init(&mutexus_maximus, NULL);
+    pthread_mutex_lock(&mutexus_maximus);
+    for(i=0; i<100; i++)
+        if(pthread_create(&threads[i], NULL, thread_func, NULL)) {
+            pthread_mutex_unlock(&mutexus_maximus);
+            return 1;
+        }
+    pthread_mutex_unlock(&mutexus_maximus);
+    return 0;
+]])],
+AC_MSG_RESULT([yes]),
+AC_MSG_RESULT([no])
+AC_DEFINE(LIMIT_THREADS, 1, [define to 1 to skip tests with 100 threads]),
+AC_MSG_RESULT([N/A]))
+fi
+
 AC_CHECK_SIZEOF([void *])
 AC_CHECK_SIZEOF([int])
 
@@ -114,7 +144,7 @@ checked_specified_primitive=no
 dnl OPA_TRY_PRIMITIVE_HEADER([header file from src/ dir], [HAVE_ macro suffix], [feature description])
 dnl FIXME should probably change this to do an AC_TRY_RUN with the existing code
 dnl used as a fallback when cross-compiling.  This will provide us with a
-dnl stronger guaranted that the code really works on the given platform.
+dnl stronger guarantee that the code really works on the given platform.
 AC_DEFUN([OPA_TRY_PRIMITIVE_HEADER],[
 if test "$with_atomic_primitives" = "auto" -o "$with_atomic_primitives" = "$1" ; then
     checked_specified_primitive=yes
