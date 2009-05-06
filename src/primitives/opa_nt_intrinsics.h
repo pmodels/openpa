@@ -7,6 +7,8 @@
 #ifndef OPA_NT_INTRINSICS_H_INCLUDED
 #define OPA_NT_INTRINSICS_H_INCLUDED
 
+#define WIN32_LEAN_AND_MEAN
+#include<windows.h>
 #include<intrin.h>
 #include "mpi.h"
 
