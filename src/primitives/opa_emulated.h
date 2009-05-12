@@ -100,7 +100,7 @@ static _opa_inline int OPA_swap_int_by_llsc(OPA_int_t *ptr, int val)
 static _opa_inline int OPA_fetch_and_add_int_by_cas(OPA_int_t *ptr, int val)
 {
     int cmp;
-    int prev = OPA_load(ptr);
+    int prev = OPA_load_int(ptr);
 
     do {
         cmp = prev;
@@ -179,7 +179,7 @@ static _opa_inline void *OPA_swap_ptr_by_cas(OPA_ptr_t *ptr, void *val)
 static _opa_inline int OPA_swap_int_by_cas(OPA_int_t *ptr, int val)
 {
     int cmp;
-    int prev = OPA_load(ptr);
+    int prev = OPA_load_int(ptr);
 
     do {
         cmp = prev;
