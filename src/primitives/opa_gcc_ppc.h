@@ -96,13 +96,13 @@ static _opa_inline int OPA_SC_ptr(OPA_ptr_t *ptr, void *val)
 #define OPA_LL_SC_SUPPORTED 1
 
 /* Implement all function using LL/SC */
-#define OPA_add_by_llsc            OPA_add
-#define OPA_incr_by_llsc           OPA_incr
-#define OPA_decr_by_llsc           OPA_decr
-#define OPA_decr_and_test_by_llsc  OPA_decr_and_test
-#define OPA_fetch_and_add_by_llsc  OPA_fetch_and_add
-#define OPA_fetch_and_decr_by_llsc OPA_fetch_and_decr
-#define OPA_fetch_and_incr_by_llsc OPA_fetch_and_incr
+#define OPA_add_int_by_llsc            OPA_add_int
+#define OPA_incr_int_by_llsc           OPA_incr_int
+#define OPA_decr_int_by_llsc           OPA_decr_int
+#define OPA_decr_and_test_int_by_llsc  OPA_decr_and_test_int
+#define OPA_fetch_and_add_int_by_llsc  OPA_fetch_and_add_int
+#define OPA_fetch_and_decr_int_by_llsc OPA_fetch_and_decr_int
+#define OPA_fetch_and_incr_int_by_llsc OPA_fetch_and_incr_int
 #define OPA_cas_ptr_by_llsc        OPA_cas_ptr
 #define OPA_cas_int_by_llsc        OPA_cas_int
 #define OPA_swap_ptr_by_llsc       OPA_swap_ptr
