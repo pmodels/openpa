@@ -98,19 +98,18 @@ static _opa_inline int OPA_fetch_and_add_int(OPA_int_t *ptr, int val)
 static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
     void *prev;
-    __asm__ __volatile__ ("lock ; cmpxchg %2,%3"
+    __asm__ __volatile__ ("lock ; cmpxchg %3,%4"
                           : "=a" (prev), "=m" (ptr->v)
-                          : "q" (newv), "m" (ptr->v), "0" (oldv));
+                          : "0" (oldv), "q" (newv), "m" (ptr->v));
     return prev;
 }
 
 static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
     int prev;
-    __asm__ __volatile__ ("lock ; cmpxchg %2,%3"
+    __asm__ __volatile__ ("lock ; cmpxchg %3,%4"
                           : "=a" (prev), "=m" (ptr->v)
-                          : "q" (newv), "m" (ptr->v), "0" (oldv)
-                          : "memory");
+                          : "0" (oldv), "q" (newv), "m" (ptr->v));
     return prev;
 }
 
