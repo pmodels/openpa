@@ -9,6 +9,9 @@
 #else /* OPA_TEST_NAIVE */
 #include "opa_config.h"
 #include "opa_util.h"
+#ifndef _opa_inline
+#define _opa_inline inline
+#endif
 #endif /* OPA_TEST_NAIVE */
 #include <assert.h>
 #include <stdio.h>
