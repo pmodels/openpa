@@ -81,6 +81,14 @@ typedef struct {
 /* Definitions for test_threaded_fad_red */
 /* Uses definitions from test_threaded_faa_ret */
 
+/* Definitions for test_threaded_cas_int */
+#define CAS_INT_NITER (2000000 / iter_reduction[curr_test])
+typedef struct {
+    OPA_int_t   *shared_val;    /* Shared int being added to by all threads */
+    int         threadno;       /* Unique thread number */
+    int         nsuccess;       /* # of times cas succeeded */
+} cas_int_t;
+
 
 /*-------------------------------------------------------------------------
  * Function: test_simple_loadstore_int
@@ -1232,7 +1240,7 @@ static void *threaded_faa_ret_helper(void *_udata)
             (udata->n1)++;
 
         /* update prev */
-        prev - ret;
+        prev = ret;
     } /* end for */
 
     /* Exit */
@@ -1506,7 +1514,7 @@ error:
  * Return: NULL
  *
  * Programmer: Neil Fortner
- *             Thursday, April 23, 2009
+ *             Friday, June 5, 2009
  *
  * Modifications:
  *
@@ -1515,7 +1523,7 @@ error:
 static void *threaded_fai_ret_helper(void *_udata)
 {
     fai_ret_t           *udata = (fai_ret_t *)_udata;
-    int                 ret, prev = INT_MAX;
+    int                 ret, prev = INT_MIN;
     unsigned            niter = FAI_RET_NITER;
     unsigned            i;
 
@@ -1524,9 +1532,9 @@ static void *threaded_fai_ret_helper(void *_udata)
         /* Add -1 to the shared value */
         ret = OPA_fetch_and_incr_int(udata->shared_val);
 
-        /* Verify that the value returned is less than the previous return */
-        if(ret >= prev) {
-            printf("\n    Unexpected return: %d is not less than %d  ", ret, prev);
+        /* Verify that the value returned is greater than the previous return */
+        if(ret <= prev) {
+            printf("\n    Unexpected return: %d is not greater than %d  ", ret, prev);
             (udata->nerrors)++;
         } /* end if */
 
@@ -1535,7 +1543,7 @@ static void *threaded_fai_ret_helper(void *_udata)
             (udata->nm1)++;
 
         /* update prev */
-        prev - ret;
+        prev = ret;
     } /* end for */
 
     /* Exit */
@@ -1556,7 +1564,7 @@ static void *threaded_fai_ret_helper(void *_udata)
  *         Failure: 1
  *
  * Programmer: Neil Fortner
- *             Thursday, April 23, 2009
+ *             Friday, June 5, 2009
  *
  * Modifications:
  *
@@ -1658,7 +1666,7 @@ error:
  * Return: NULL
  *
  * Programmer: Neil Fortner
- *             Thursday, April 23, 2009
+ *             Friday, June 5, 2009
  *
  * Modifications:
  *
@@ -1687,7 +1695,7 @@ static void *threaded_fad_ret_helper(void *_udata)
             (udata->n1)++;
 
         /* update prev */
-        prev - ret;
+        prev = ret;
     } /* end for */
 
     /* Exit */
@@ -1708,7 +1716,7 @@ static void *threaded_fad_ret_helper(void *_udata)
  *         Failure: 1
  *
  * Programmer: Neil Fortner
- *             Thursday, April 23, 2009
+ *             Friday, June 5, 2009
  *
  * Modifications:
  *
@@ -1802,6 +1810,197 @@ error:
 
 
 /*-------------------------------------------------------------------------
+ * Function: test_simple_cas_int
+ *
+ * Purpose: Tests basic functionality of OPA_cas_int with a single thread.
+ *          Does not test atomicity of operations.
+ *
+ * Return: Success: 0
+ *         Failure: 1
+ *
+ * Programmer: Neil Fortner
+ *             Tuesday, June 9, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static int test_simple_cas_int(void)
+{
+    OPA_int_t   a;
+
+    TESTING("simple integer compare-and-swap functionality", 0);
+
+    /* Store 0 in a */
+    OPA_store_int(&a, 0);
+
+    /* Compare and swap multiple times, verify return value and final result */
+    if(0 != OPA_cas_int(&a, 1, INT_MAX)) TEST_ERROR;
+    //if((*(&a) == (1) ? (*(&a) = (INT_MAX), (1)) : (&a))
+    if(0 != OPA_cas_int(&a, 0, INT_MAX)) TEST_ERROR;
+    if(INT_MAX != OPA_cas_int(&a, INT_MAX, INT_MIN)) TEST_ERROR;
+    if(INT_MIN != OPA_cas_int(&a, INT_MAX, 1)) TEST_ERROR;
+    if(INT_MIN != OPA_cas_int(&a, INT_MIN, 1)) TEST_ERROR;
+    if(1 != OPA_load_int(&a)) TEST_ERROR;
+
+    PASSED();
+    return 0;
+
+error:
+    return 1;
+} /* end test_simple_cas_int() */
+
+
+#if defined(OPA_HAVE_PTHREAD_H)
+/*-------------------------------------------------------------------------
+ * Function: threaded_cas_int_helper
+ *
+ * Purpose: Helper (thread) routine for test_threaded_cas_int
+ *
+ * Return: NULL
+ *
+ * Programmer: Neil Fortner
+ *             Tuesday, June 9, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static void *threaded_cas_int_helper(void *_udata)
+{
+    cas_int_t           *udata = (cas_int_t *)_udata;
+    int                 thread_id = udata->threadno;
+    int                 next_id = (thread_id + 1) % num_threads[curr_test];
+    unsigned            niter = CAS_INT_NITER;
+    unsigned            i;
+
+    /* Main loop */
+    for(i=0; i<niter; i++)
+        if(OPA_cas_int(udata->shared_val, thread_id, next_id) == thread_id)
+            udata->nsuccess++;
+
+    /* Exit */
+    pthread_exit(NULL);
+} /* end threaded_cas_int_helper() */
+#endif /* OPA_HAVE_PTHREAD_H */
+
+
+/*-------------------------------------------------------------------------
+ * Function: test_threaded_cas_int
+ *
+ * Purpose: Tests atomicity of OPA_cas_int.  Launches nthreads threads,
+ *          each of which continually tries to compare-and-swap a shared
+ *          value with its thread id (oldv) and thread id + 1 % n (newv).
+ *
+ * Return: Success: 0
+ *         Failure: 1
+ *
+ * Programmer: Neil Fortner
+ *             Thursday, April 23, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static int test_threaded_cas_int(void)
+{
+#if defined(OPA_HAVE_PTHREAD_H)
+    pthread_t           *threads = NULL; /* Threads */
+    pthread_attr_t      ptattr;         /* Thread attributes */
+    cas_int_t           *thread_data = NULL; /* User data structs for threads */
+    OPA_int_t           shared_val;     /* Integer shared between threads */
+    int                 nerrors = 0;    /* Number of errors */
+    int                 n1 = 0;         /* # of times faa returned 1 */
+    unsigned            nthreads = num_threads[curr_test];
+    unsigned            i;
+
+    TESTING("integer compare-and-swap", nthreads);
+
+    /* Allocate array of threads */
+    if(NULL == (threads = (pthread_t *) malloc(nthreads * sizeof(pthread_t))))
+        TEST_ERROR;
+
+    /* Allocate array of thread data */
+    if(NULL == (thread_data = (cas_int_t *) malloc(nthreads * sizeof(cas_int_t))))
+        TEST_ERROR;
+
+    /* Initialize thread data structs */
+    OPA_store_int(&shared_val, 0);
+    for(i=0; i<nthreads; i++) {
+        thread_data[i].shared_val = &shared_val;
+        thread_data[i].threadno = i;
+        thread_data[i].nsuccess = 0;
+    } /* end for */
+
+    /* Set threads to be joinable */
+    pthread_attr_init(&ptattr);
+    pthread_attr_setdetachstate(&ptattr, PTHREAD_CREATE_JOINABLE);
+
+    /* Create the threads */
+    for(i=0; i<nthreads; i++)
+        if(pthread_create(&threads[i], &ptattr, threaded_cas_int_helper,
+                &thread_data[i])) TEST_ERROR;
+
+    /* Free the attribute */
+    if(pthread_attr_destroy(&ptattr)) TEST_ERROR;
+
+    /* Join the threads */
+    for (i=0; i<nthreads; i++)
+        if(pthread_join(threads[i], NULL)) TEST_ERROR;
+
+    /* Verify that cas succeeded at least once */
+    if(thread_data[0].nsuccess == 0)
+        FAIL_OP_ERROR(printf("    Compare-and-swap never succeeded\n"));
+
+    /* Verify that the number of successes does not increase with increasing
+     * thread number, and also that the shared value's final value is consistent
+     * with the numbers of successes */
+    if(nthreads > 1)
+        for(i=1; i<nthreads; i++) {
+            if(thread_data[i].nsuccess > thread_data[i-1].nsuccess)
+                FAIL_OP_ERROR(printf("    Thread %d succeeded more times than thread %d\n",
+                        i, i-1));
+
+            if((thread_data[i].nsuccess < thread_data[i-1].nsuccess)
+                    && (OPA_load_int(&shared_val) != i))
+                FAIL_OP_ERROR(printf("    Number of successes is inconsistent\n"));
+        } /* end for */
+    if((thread_data[0].nsuccess == thread_data[nthreads-1].nsuccess)
+            && (OPA_load_int(&shared_val) != 0))
+        FAIL_OP_ERROR(printf("    Number of successes is inconsistent\n"));
+
+    /* Verify that the number of successes for the first threads is equal to or
+     * one greater than the number of successes for the last thread.  Have
+     * already determine that it is not less in the previous test. */
+    if(thread_data[0].nsuccess > (thread_data[nthreads-1].nsuccess + 1))
+        FAIL_OP_ERROR(printf("    Thread 0 succeeded %d times more than thread %d\n",
+                thread_data[0].nsuccess - thread_data[nthreads-1].nsuccess,
+                nthreads - 1));
+
+    /* Free memory */
+    free(threads);
+    free(thread_data);
+
+    PASSED();
+
+#else /* OPA_HAVE_PTHREAD_H */
+    TESTING("add", 0);
+    SKIPPED();
+    puts("    pthread.h not available");
+#endif /* OPA_HAVE_PTHREAD_H */
+
+    return 0;
+
+#if defined(OPA_HAVE_PTHREAD_H)
+error:
+    if(threads) free(threads);
+    if(thread_data) free(thread_data);
+    return 1;
+#endif /* OPA_HAVE_PTHREAD_H */
+} /* end test_threaded_cas_int() */
+
+
+/*-------------------------------------------------------------------------
  * Function:    main
  *
  * Purpose:     Tests the opa primitives
@@ -1831,6 +2030,7 @@ int main(int argc, char **argv)
     nerrors += test_simple_add_incr_decr();
     nerrors += test_simple_decr_and_test();
     nerrors += test_simple_faa_fai_fad();
+    nerrors += test_simple_cas_int();
 
     /* Loop over test configurations */
     for(curr_test=0; curr_test<num_thread_tests; curr_test++) {
@@ -1845,7 +2045,8 @@ int main(int argc, char **argv)
         nerrors += test_threaded_fai_fad();
         nerrors += test_threaded_fai_ret();
         nerrors += test_threaded_fad_ret();
-    }
+        nerrors += test_threaded_cas_int();
+    } /* end for */
 
     if(nerrors)
         goto error;
