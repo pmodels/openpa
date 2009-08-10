@@ -125,9 +125,11 @@ do {                                                                           \
  * Array of number of threads.  Each threaded test is run once for each entry in
  * this array.  Remove the last test if OPA_LIMIT_THREADS is defined.
  */
-static const unsigned num_threads[] = {1, 2, 10, 100};
+static const unsigned num_threads[] = {1, 2, 4, 10, 100};
 static const unsigned num_thread_tests = sizeof(num_threads) / sizeof(num_threads[0])
-#ifdef OPA_LIMIT_THREADS
+#if OPA_MAX_NTHREADS < 10
+- 2
+#elif OPA_MAX_NTHREADS < 100
 - 1
 #endif /* OPA_LIMIT_THREADS */
 ;
@@ -136,7 +138,7 @@ static const unsigned num_thread_tests = sizeof(num_threads) / sizeof(num_thread
  * Factor to reduce the number of iterations by for each test.  Must be the same
  * size as num_threads.
  */
-static const unsigned iter_reduction[] = {1, 1, 1, 10};
+static const unsigned iter_reduction[] = {1, 1, 1, 1, 10};
 
 /*
  * Other global variables.

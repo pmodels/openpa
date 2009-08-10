@@ -66,10 +66,10 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[
     }
 ]], [[
     int i;
-    pthread_t threads[100];
+    pthread_t threads[99];
     pthread_mutex_init(&mutexus_maximus, NULL);
     pthread_mutex_lock(&mutexus_maximus);
-    for(i=0; i<100; i++)
+    for(i=0; i<99; i++)
         if(pthread_create(&threads[i], NULL, thread_func, NULL)) {
             pthread_mutex_unlock(&mutexus_maximus);
             return 1;
@@ -77,9 +77,38 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[
     pthread_mutex_unlock(&mutexus_maximus);
     return 0;
 ]])],
-AC_MSG_RESULT([yes]),
+AC_MSG_RESULT([yes])
+AC_DEFINE(MAX_NTHREADS, 100, [define to the maximum number of simultaneous threads]),
 AC_MSG_RESULT([no])
-AC_DEFINE(LIMIT_THREADS, 1, [define to 1 to skip tests with 100 threads]),
+dnl We cannot run 100 threads, check if we can run 10
+    AC_MSG_CHECKING([if 10 threads can be run at once])
+    AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+        #include <stddef.h>
+        #include <pthread.h>
+        pthread_mutex_t mutexus_maximus;
+        void *thread_func(void *udata) {
+            pthread_mutex_lock(&mutexus_maximus);
+            pthread_mutex_unlock(&mutexus_maximus);
+            return NULL;
+        }
+    ]], [[[
+        int i;
+        pthread_t threads[9];
+        pthread_mutex_init(&mutexus_maximus, NULL);
+        pthread_mutex_lock(&mutexus_maximus);
+        for(i=0; i<9; i++)
+            if(pthread_create(&threads[i], NULL, thread_func, NULL)) {
+                pthread_mutex_unlock(&mutexus_maximus);
+                return 1;
+            }
+        pthread_mutex_unlock(&mutexus_maximus);
+        return 0;
+    ]]])],
+    AC_MSG_RESULT([yes])
+    AC_DEFINE(MAX_NTHREADS, 10, [define to the maximum number of simultaneous threads]),
+    AC_MSG_RESULT([no])
+    AC_DEFINE(MAX_NTHREADS, 4, [define to the maximum number of simultaneous threads]),
+    AC_MSG_RESULT([N/A])),
 AC_MSG_RESULT([N/A]))
 fi
 
