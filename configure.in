@@ -157,17 +157,18 @@ AC_ARG_WITH(atomic-primitives, AC_HELP_STRING([--with-atomic-primitives],
      primitives.  A value of 'auto_allow_emulation' will attempt to detect
      native primitives and will fall back to lock-based emulation if none are
      available.  Note that using locks to implement atomic primitives will have
-     a substantial impact on performance and is intended for testing only.]),
-    if test "$with_atomic_primitives" = "yes" ; then with_atomic_primitives=auto; fi
-    , 
-    with_atomic_primitives=auto
+     a substantial impact on performance and is intended for testing only.  A
+     value of 'unsafe' will use a non-atomic version of the primitives for performance
+     in single-threaded code and meta-testing.]),
+    AS_IF([test "$with_atomic_primitives" = "yes"], [with_atomic_primitives=auto]),
+    [with_atomic_primitives=auto]
 )
 
 
-dnl is set to yes by the macro below if any test ever succeeds
+# is set to yes by the macro below if any test ever succeeds
 non_emulated_primitives_available=no
-dnl is set to yes in OPA_TRY_PRIMITIVE_HEADER when a primitive
-dnl matching $with_atomic_primitives is checked
+# is set to yes in OPA_TRY_PRIMITIVE_HEADER when a primitive
+# matching $with_atomic_primitives is checked
 checked_specified_primitive=no
 
 AC_DEFUN([OPA_PRIMITIVE_TEST_PGM], [AC_LANG_PROGRAM([[
@@ -263,8 +264,13 @@ then
 fi
 ])
 
+using_emulated_primitives=no
+using_unsafe_primitives=no
+
 if test "$with_atomic_primitives" = "no" ; then
     using_emulated_primitives=yes
+elif test "$with_atomic_primitives" = "unsafe" ; then
+    using_unsafe_primitives=yes
 else
 dnl We currently test for support of each platform or implementation by
 dnl attempting to compile the associated primitives header file.  This doesn't
@@ -323,6 +329,19 @@ Use this only for testing.
 ===================================================])
     AC_DEFINE(USE_LOCK_BASED_PRIMITIVES, 1, [define to 1 to force using lock-based atomic primitives])
 fi
+
+if test "$using_unsafe_primitives" = "yes" ; then
+    AC_MSG_WARN([
+===================================================
+Using *UNSAFE*, *NON-ATOMIC* primitive operations.
+Use this for only for testing or for performance
+reasons in non-concurrent code.
+
+Consider yourself warned!
+===================================================])
+    AC_DEFINE([USE_UNSAFE_PRIMITIVES],[1],[define to 1 if unsafe (non-atomic) primitives should be used])
+fi
+
 
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 AC_OUTPUT
