@@ -134,6 +134,19 @@ typedef struct {
     int         master_thread;  /* Whether this is the master thread */
 } grouped_cas_ptr_t;
 
+/* Definitions for test_threaded_cas_int_fairness */
+#define CAS_INT_FAIRNESS_MIN_SUCCESS (100 / iter_reduction[curr_test])
+#define CAS_INT_FAIRNESS_MAX_ITER (10000000 / iter_reduction[curr_test])
+typedef struct {
+    OPA_int_t   *shared_val;    /* Shared int being added to by all threads */
+    int         nerrors;        /* Number of errors */
+    int         threadno;       /* Unique thread number */
+    int         nthreads;       /* Number of threads */
+    OPA_int_t   *successful_threads; /* # of threads that have completed */
+    int         terminated;     /* Whether this thread was terminated by MAX_ITER */
+    int         master_thread;  /* Whether this is the master thread */
+} cas_int_fairness_t;
+
 
 /*-------------------------------------------------------------------------
  * Function: test_simple_loadstore_int
@@ -1995,7 +2008,7 @@ static int test_simple_cas_ptr(void)
     if(ptr4 != OPA_cas_ptr(&a, ptr3, ptr2)) TEST_ERROR;
     if(ptr4 != OPA_cas_ptr(&a, ptr4, ptr2)) TEST_ERROR;
     if(ptr2 != OPA_load_ptr(&a)) TEST_ERROR;
-    
+
     if(ptr1) free(ptr1);
     if(ptr2) free(ptr2);
     if(ptr3) free(ptr3);
@@ -2676,6 +2689,203 @@ error:
 } /* end test_grouped_cas_ptr() */
 
 
+#if defined(OPA_HAVE_PTHREAD_H)
+/*-------------------------------------------------------------------------
+ * Function: threaded_cas_int_fairness_helper
+ *
+ * Purpose: Helper (thread) routine for test_threaded_cas_int_fairness
+ *
+ * Return: NULL
+ *
+ * Programmer: Neil Fortner
+ *             Tuesday, June 9, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static void *threaded_cas_int_fairness_helper(void *_udata)
+{
+    cas_int_fairness_t  *udata = (cas_int_fairness_t *)_udata;
+    int                 thread_id = udata->threadno;
+    unsigned            nsuccess = 0;
+    unsigned            min_success = CAS_INT_FAIRNESS_MIN_SUCCESS;
+    unsigned            max_iter = CAS_INT_FAIRNESS_MAX_ITER;
+    unsigned            i;
+
+    /* Main loop */
+    for(i=0; i<max_iter; i++) {
+        /* Attempt to set the shared value to the thread id */
+        if(OPA_cas_int(udata->shared_val, -1, thread_id) == -1) {
+
+            /* Increment success counter */
+            nsuccess++;
+
+            /* Check for completion */
+            if(nsuccess == min_success)
+                OPA_incr_int(udata->successful_threads);
+
+            /* Reset shared value */
+            if(OPA_cas_int(udata->shared_val, thread_id, -1) != thread_id)
+                udata->nerrors++;
+        } /* end if */
+
+        /* Check for global completion */
+        if(udata->nthreads == OPA_load_int(udata->successful_threads))
+            break;
+
+        /* Yield if we are not performing strict fairness checks.  This gives
+         * other threads a chance and reduces the probability of a thread being
+         * stopped for a long period of time after succeeding but before
+         * resetting the shared value, preventing forward progress. */
+#ifndef OPA_HAVE_STRICT_FAIRNESS_CHECKS
+        pthread_yield();
+#endif /* OPA_HAVE_STRICT_FAIRNESS_CHECKS */
+    } /* end for */
+
+    /* Check if the loop was terminated due to hitting the MAX_ITER barrier,
+     * throw a warning if it was */
+    if(i == max_iter)
+        udata->terminated = 1;
+
+    /* Exit */
+    if(udata->master_thread)
+        return(NULL);
+    else
+        pthread_exit(NULL);
+} /* end threaded_cas_int_fairness_helper() */
+#endif /* OPA_HAVE_PTHREAD_H */
+
+
+/*-------------------------------------------------------------------------
+ * Function: test_threaded_cas_int_fairness
+ *
+ * Purpose: Tests fairness of OPA_cas_int.  Launches nthreads threads,
+ *          each of which continually tries to compare-and-swap a shared
+ *          value with -1 (oldv) and thread id(newv), then sets it back to
+ *          -1.  Each thread continues until all threads have succeeded
+ *          CAS_INT_FAIRNESS_MIN_SUCCESS times.
+ *
+ * Return: Success: 0
+ *         Failure: 1
+ *
+ * Programmer: Neil Fortner
+ *             Tuesday, August 11, 2009
+ *
+ * Modifications:
+ *
+ *-------------------------------------------------------------------------
+ */
+static int test_threaded_cas_int_fairness(void)
+{
+#if defined(OPA_HAVE_PTHREAD_H)
+    pthread_t           *threads = NULL; /* Threads */
+    pthread_attr_t      ptattr;         /* Thread attributes */
+    cas_int_fairness_t  *thread_data = NULL; /* User data structs for threads */
+    OPA_int_t           shared_val;     /* Integer shared between threads */
+    OPA_int_t           successful_threads; /* Number of threads that have succeeded */
+    int                 succeeded = 0;  /* Whether all threads succeeded */
+    int                 terminated = 0; /* Number of threads that were terminated */
+    int                 nerrors = 0;    /* Number of errors */
+    unsigned            nthreads = num_threads[curr_test];
+    unsigned            i;
+
+    TESTING("integer compare-and-swap fairness", nthreads);
+
+    /* Allocate array of threads */
+    if(NULL == (threads = (pthread_t *) malloc((nthreads - 1) * sizeof(pthread_t))))
+        TEST_ERROR;
+
+    /* Allocate array of thread data */
+    if(NULL == (thread_data = (cas_int_fairness_t *) calloc(nthreads, sizeof(cas_int_fairness_t))))
+        TEST_ERROR;
+
+    /* Initialize thread data structs */
+    OPA_store_int(&shared_val, -1);
+    OPA_store_int(&successful_threads, 0);
+    for(i=0; i<nthreads; i++) {
+        thread_data[i].shared_val = &shared_val;
+        thread_data[i].threadno = i;
+        thread_data[i].nthreads = (int) nthreads;
+        thread_data[i].successful_threads = &successful_threads;
+    } /* end for */
+    thread_data[nthreads-1].master_thread = 1;
+
+    /* Set threads to be joinable */
+    pthread_attr_init(&ptattr);
+    pthread_attr_setdetachstate(&ptattr, PTHREAD_CREATE_JOINABLE);
+
+    /* Create the threads */
+    for(i=0; i<(nthreads - 1); i++)
+        if(pthread_create(&threads[i], &ptattr, threaded_cas_int_fairness_helper,
+                &thread_data[i])) TEST_ERROR;
+    (void)threaded_cas_int_fairness_helper(&thread_data[i]);
+
+    /* Free the attribute */
+    if(pthread_attr_destroy(&ptattr)) TEST_ERROR;
+
+    /* Join the threads */
+    for (i=0; i<(nthreads - 1); i++)
+        if(pthread_join(threads[i], NULL)) TEST_ERROR;
+
+    /* Check if any errors were reported by the threads */
+    for(i=0; i<nthreads; i++)
+        nerrors += thread_data[i].nerrors;
+    if(nerrors)
+        FAIL_OP_ERROR(printf("    %d unexpected return%s from OPA_cas_int\n",
+                nerrors, nerrors == 1 ? "" : "s"));
+
+    /* Verify that all threads succeeded */
+    if(OPA_load_int(&successful_threads) == (int) nthreads)
+        succeeded = 1;
+
+    /* Check if any threads were terminated before succeeding */
+    for(i=0; i<nthreads; i++)
+        terminated += thread_data[i].terminated;
+
+    /* If no threads were terminated, but not all succeeded, something is very
+     * wrong... */
+    if(!succeeded && !terminated)
+        FAIL_OP_ERROR(printf("    Not all threads succeeded, but none were terminated\n"));
+
+    /* Otherwise, throw a warning if any threads were terminated */
+    if(terminated)
+    {
+        WARNING();
+        if(succeeded)
+            printf("    %d thread%s were terminated before succeeding: there may be an issue with\n    fairness\n",
+                    terminated, terminated == 1 ? "" : "s");
+        else {
+            i = nthreads - OPA_load_int(&successful_threads);
+            printf("    %d thread%s did not succeed: there may be an issue with fairness\n",
+                    i, i == 1 ? "" : "s");
+        } /* end else */
+    } /* end if */
+
+    /* Free memory */
+    free(threads);
+    free(thread_data);
+
+    if(!terminated)
+        PASSED();
+
+#else /* OPA_HAVE_PTHREAD_H */
+    TESTING("integer compare-and-swap", 0);
+    SKIPPED();
+    puts("    pthread.h not available");
+#endif /* OPA_HAVE_PTHREAD_H */
+
+    return 0;
+
+#if defined(OPA_HAVE_PTHREAD_H)
+error:
+    if(threads) free(threads);
+    if(thread_data) free(thread_data);
+    return 1;
+#endif /* OPA_HAVE_PTHREAD_H */
+} /* end test_threaded_cas_int_fairness() */
+
+
 /*-------------------------------------------------------------------------
  * Function:    main
  *
@@ -2726,6 +2936,7 @@ int main(int argc, char **argv)
         nerrors += test_threaded_cas_ptr();
         nerrors += test_grouped_cas_int();
         nerrors += test_grouped_cas_ptr();
+        nerrors += test_threaded_cas_int_fairness();
     } /* end for */
 
     if(nerrors)

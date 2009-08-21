@@ -342,6 +342,23 @@ Consider yourself warned!
     AC_DEFINE([USE_UNSAFE_PRIMITIVES],[1],[define to 1 if unsafe (non-atomic) primitives should be used])
 fi
 
+dnl Check to see if we should enable strict fairness checks
+AC_MSG_CHECKING([whether to enable strict fairness checks])
+AC_ARG_ENABLE(strict-fairness-checks,
+    [AC_HELP_STRING([--enable-strict-fairness-checks],
+        [Enable stricter checks of the "fairness" of atomic operations in the
+         test suite (default is no).  A value of 'yes' will remove the calls to
+         pthread_yield() from these test routines.])],
+    [strict_fairness_checks=$enableval],
+    [strict_fairness_checks=no])
+if test "${strict_fairness_checks}" = "yes"; then
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([HAVE_STRICT_FAIRNESS_CHECKS], [1],
+        [Define if strict checking of atomic operation fairness is desired])
+else
+    AC_MSG_RESULT([no])
+fi
+
 
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 AC_OUTPUT
