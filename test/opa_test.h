@@ -21,6 +21,16 @@
 #include <pthread.h>
 #endif /* HAVE_PTHREAD_H */
 
+/* Define the macro to use for yielding the current thread (to others) */
+#if defined(OPA_HAVE_PTHREAD_YIELD)
+#define OPA_TEST_YIELD() pthread_yield()
+#elif defined(OPA_HAVE_SCHED_YIELD)
+#include <sched.h>
+#define OPA_TEST_YIELD() (void) sched_yield()
+#else
+#define OPA_TEST_YIELD() (void) 0
+#endif
+
 /*
  * Naive redefinition of OPA functions as simple C operations.  These should
  * pass all the "simple" tests, but fail on the threaded tests (with >1 thread),

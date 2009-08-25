@@ -53,6 +53,15 @@ dnl Check for presence of the pthreads library.  This is needed by the test
 dnl suite.
 AC_CHECK_LIB(pthread, pthread_create)
 
+dnl Check for presence of pthread_yield.  If not present, check for sched_yield.
+dnl These are used by the test suite.
+AC_CHECK_FUNCS(pthread_yield,
+    ,
+    [AC_CHECK_HEADER(sched.h,
+        [AC_CHECK_FUNCS(sched_yield)]
+    )]
+)
+
 if test "$ac_cv_lib_pthread_pthread_create" = yes; then
 AC_MSG_CHECKING([if 100 threads can be run at once])
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[

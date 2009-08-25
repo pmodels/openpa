@@ -2752,7 +2752,7 @@ static void *threaded_cas_int_fairness_helper(void *_udata)
          * stopped for a long period of time after succeeding but before
          * resetting the shared value, preventing forward progress. */
 #ifndef OPA_HAVE_STRICT_FAIRNESS_CHECKS
-        pthread_yield();
+        OPA_TEST_YIELD();
 #endif /* OPA_HAVE_STRICT_FAIRNESS_CHECKS */
     } /* end for */
 
@@ -2949,7 +2949,7 @@ static void *threaded_cas_ptr_fairness_helper(void *_udata)
          * stopped for a long period of time after succeeding but before
          * resetting the shared value, preventing forward progress. */
 #ifndef OPA_HAVE_STRICT_FAIRNESS_CHECKS
-        pthread_yield();
+        OPA_TEST_YIELD();
 #endif /* OPA_HAVE_STRICT_FAIRNESS_CHECKS */
     } /* end for */
 
