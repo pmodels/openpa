@@ -16,7 +16,7 @@
 
 pthread_mutex_t *OPA_emulation_lock = NULL;
 
-int OPA_Interprocess_lock_init(pthread_mutex_t *shm_lock, int isLeader)
+int OPA_Interprocess_lock_init(OPA_emulation_ipl_t *shm_lock, int isLeader)
 {
     int mpi_errno = 0; /*MPI_SUCCESS*/
     OPA_emulation_lock = shm_lock;
