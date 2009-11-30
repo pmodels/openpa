@@ -336,6 +336,8 @@ penalty.
     fi
 fi
 
+internal_pkg_config_libs=
+external_pkg_config_libs=
 if test "$using_emulated_primitives" = "yes" ; then
     AC_MSG_WARN([
 ===================================================
@@ -344,7 +346,12 @@ will result in a substantial impact on performance.
 Use this only for testing.
 ===================================================])
     AC_DEFINE(USE_LOCK_BASED_PRIMITIVES, 1, [define to 1 to force using lock-based atomic primitives])
+    internal_pkg_config_libs="-lpthread $internal_pkg_config_libs"
+    external_pkg_config_libs="-lopa     $external_pkg_config_libs"
 fi
+
+AC_SUBST(internal_pkg_config_libs)
+AC_SUBST(external_pkg_config_libs)
 
 if test "$using_unsafe_primitives" = "yes" ; then
     AC_MSG_WARN([
@@ -376,6 +383,6 @@ else
 fi
 
 
-AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile test/Makefile openpa.pc])
 AC_OUTPUT
 

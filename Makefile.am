@@ -13,7 +13,7 @@ DISTCLEANFILES = _configs.sed src/opa_config.h
 
 # files that automake doesn't know about by default that should be included in
 # the distribution
-EXTRA_DIST = COPYRIGHT CHANGELOG
+EXTRA_DIST = COPYRIGHT CHANGELOG openpa.pc.in
 
 # uses the highlight utility to color code the test output
 prettycheck:
@@ -26,6 +26,11 @@ prettycheck:
 # system changes to support parallel make (i.e. "make -j 4").  It serves no
 # other purpose, but should _not_ be removed unless you know what you are doing.
 all-executable:
+
+# pkgconfig files
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = openpa.pc
+$(pkgconfig_DATA): config.status
 
 
 .PHONY: prettycheck all-executable
