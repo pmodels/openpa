@@ -7,11 +7,9 @@
 #ifndef OPA_GCC_PPC_H_INCLUDED
 #define OPA_GCC_PPC_H_INCLUDED
 
-/* these only need to be aligned on an 8-byte boundary to work on a BG/P, but
- * they need to be aligned on a 16-byte boundary to work on many PPC970
- * processors (according to the PPC970MP manual, at least). */
-typedef struct { volatile int v    OPA_ATTRIBUTE((aligned (16))); } OPA_int_t;
-typedef struct { void * volatile v OPA_ATTRIBUTE((aligned (16))); } OPA_ptr_t;
+/* these need to be aligned on an 8-byte boundary to work on a BG/P */
+typedef struct { volatile int v    OPA_ATTRIBUTE((aligned (8))); } OPA_int_t;
+typedef struct { void * volatile v OPA_ATTRIBUTE((aligned (8))); } OPA_ptr_t;
 
 #define OPA_INT_T_INITIALIZER(val_) { (val_) }
 #define OPA_PTR_T_INITIALIZER(val_) { (val_) }
