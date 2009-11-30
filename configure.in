@@ -49,6 +49,10 @@ AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h])
 AC_C_RESTRICT
 AC_C_INLINE
 
+# Not strictly needed (autoconf docs: This macro is obsolescent, as current C
+# compilers support const. New programs need not use this macro. )
+AC_C_CONST
+
 dnl Check for presence of the pthreads library.  This is needed by the test
 dnl suite.
 AC_CHECK_LIB(pthread, pthread_create)
@@ -188,6 +192,9 @@ AC_DEFUN([OPA_PRIMITIVE_TEST_PGM], [AC_LANG_PROGRAM([[
 #endif
 #ifndef _opa_restrict
 #define _opa_restrict restrict
+#endif
+#ifndef _opa_const
+#define _opa_const const
 #endif
 #ifdef HAVE_GCC_ATTRIBUTE
 #define OPA_HAVE_GCC_ATTRIBUTE 1
