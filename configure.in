@@ -44,7 +44,7 @@ AC_PROG_RANLIB
 
 AC_HEADER_ASSERT
 # do we need intrin.h in here since it's a windows file?
-AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h])
+AC_CHECK_HEADERS([pthread.h atomic.h intrin.h inttypes.h stdint.h stddef.h])
 
 AC_C_RESTRICT
 AC_C_INLINE
