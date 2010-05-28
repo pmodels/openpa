@@ -285,6 +285,10 @@ using_unsafe_primitives=no
 
 if test "$with_atomic_primitives" = "no" ; then
     using_emulated_primitives=yes
+    # EXPLICIT_EMULATION becomes OPA_EXPLICIT_EMULATION in the installed opa_config.h
+    AC_DEFINE([EXPLICIT_EMULATION],[1],
+              [define if lock-based emulation was explicitly requested at
+               configure time via --with-atomic-primitives=no])
 elif test "$with_atomic_primitives" = "unsafe" ; then
     using_unsafe_primitives=yes
 else
@@ -317,7 +321,7 @@ dnl without AC_TRY_RUN().
     OPA_TRY_PRIMITIVE_HEADER([opa_sun_atomic_ops.h], [SUN_ATOMIC_OPS], [Sun atomic operations library])
 
     if test "$checked_specified_primitive" = "no" ; then
-        AC_MSG_ERROR([didn't find specified atomic primitives file "$with_atomic_primitives"], 1)
+        AC_MSG_ERROR([did not find specified atomic primitives file "$with_atomic_primitives"], 1)
     fi
 
     if test "$non_emulated_primitives_available" = "no" ; then
