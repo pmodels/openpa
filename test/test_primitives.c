@@ -262,7 +262,7 @@ static void *threaded_loadstore_int_helper(void *_udata)
         } /* end if */
     } /* end for */
 
-    /* Any non-NULL exit value indicates an error, we use &i here */
+    /* Exit */
     if(udata->master_thread)
         return(NULL);
     else
@@ -447,7 +447,7 @@ static void *threaded_loadstore_ptr_helper(void *_udata)
         } /* end if */
     } /* end for */
 
-    /* Any non-NULL exit value indicates an error, we use &i here */
+    /* Exit */
     if(udata->master_thread)
         return(NULL);
     else
@@ -3473,7 +3473,7 @@ static int test_threaded_swap_ptr(void)
     for(i=0; i<nthreads; i++) {
         /* Increment the number of times local_val was encountered.  Use the
          * threadno of the target thread_data element as the index into vals.
-         * If local_val in NULL, use nthreads as the index. */
+         * If local_val is NULL, use nthreads as the index. */
         if(thread_data[i].local_val)
             vals[((swap_ptr_t *)thread_data[i].local_val)->threadno]++;
         else

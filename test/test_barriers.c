@@ -80,7 +80,6 @@ static int test_barriers_sanity(void)
     OPA_int_t   a;
     int         b;
 
-
     TESTING("memory barrier sanity", 0);
 
     /* Store 0 in a and b */
@@ -158,7 +157,7 @@ static int test_barriers_sanity(void)
 
 error:
     return 1;
-} /* end test_simple_add_incr_decr() */
+} /* end test_barriers_sanity() */
 
 
 #if defined(OPA_HAVE_PTHREAD_H)
@@ -247,8 +246,8 @@ static void *test_barriers_linear_array_read(void *_shared_array)
             } /* end if */
     } /* end for */
 
-    /* Any non-NULL exit value indicates an error, we use &i here */
-    pthread_exit(nerrors ? &i : NULL);
+    /* Any non-NULL exit value indicates an error, we use (void *) 1 here */
+    pthread_exit(nerrors ? (void *) 1 : NULL);
 } /* end test_barriers_linear_array_read() */
 #endif /* OPA_HAVE_PTHREAD_H */
 
@@ -483,8 +482,8 @@ static void *test_barriers_variables_read(void *_udata)
             } /* end if */
     } /* end for */
 
-    /* Any non-NULL exit value indicates an error, we use &i here */
-    pthread_exit(nerrors ? &i : NULL);
+    /* Any non-NULL exit value indicates an error, we use (void *) 1 here */
+    pthread_exit(nerrors ? (void *) 1 : NULL);
 } /* end test_barriers_variables_read() */
 #endif /* OPA_HAVE_PTHREAD_H */
 
@@ -736,7 +735,7 @@ int main(int argc, char **argv)
         nerrors += test_barriers_linear_array();
         nerrors += test_barriers_variables();
         nerrors += test_barriers_scattered_array();
-    }
+    } /* end for */
 
     if(nerrors)
         goto error;

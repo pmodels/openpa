@@ -5,30 +5,31 @@
  */
 
 #ifndef OPA_TEST_NAIVE
-#include "opa_primitives.h"
+#  include "opa_primitives.h"
 #else /* OPA_TEST_NAIVE */
-#include "opa_config.h"
-#include "opa_util.h"
-#ifndef _opa_inline
-#define _opa_inline inline
-#endif
+#  define OPA_PRIMITIVES_H_INCLUDED
+#  include "opa_config.h"
+#  include "opa_util.h"
+#  ifndef _opa_inline
+#    define _opa_inline inline
+#  endif
 #endif /* OPA_TEST_NAIVE */
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #if defined(OPA_HAVE_PTHREAD_H)
-#include <pthread.h>
+#  include <pthread.h>
 #endif /* HAVE_PTHREAD_H */
 
 /* Define the macro to use for yielding the current thread (to others) */
 #if defined(OPA_HAVE_PTHREAD_YIELD)
-#define OPA_TEST_YIELD() pthread_yield()
+#  define OPA_TEST_YIELD() pthread_yield()
 #elif defined(OPA_HAVE_SCHED_YIELD)
-#include <sched.h>
-#define OPA_TEST_YIELD() (void) sched_yield()
+#  include <sched.h>
+#  define OPA_TEST_YIELD() (void) sched_yield()
 #else
-#define OPA_TEST_YIELD() (void) 0
+#  define OPA_TEST_YIELD() (void) 0
 #endif
 
 /*
@@ -92,6 +93,13 @@ static _opa_inline int OPA_swap_int(OPA_int_t *ptr, int val)
 #define OPA_SC_int OPA_store_int
 #define OPA_LL_ptr OPA_load_ptr
 #define OPA_SC_ptr OPA_store_ptr
+
+#if defined(OPA_HAVE_SCHED_YIELD)
+#  include <sched.h>
+#  define OPA_busy_wait() sched_yield()
+#else
+#  define OPA_busy_wait() do { } while (0)
+#endif
 
 #endif /* OPA_TEST_NAIVE */
 
