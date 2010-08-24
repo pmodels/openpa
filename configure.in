@@ -21,6 +21,13 @@ save_cflags=$CFLAGS
 LT_INIT(disable-shared)
 CFLAGS=$save_cflags
 
+if test -s "$srcdir/VERSION" ; then
+   . $srcdir/VERSION
+   AC_SUBST(libopa_so_version)
+else
+   AC_MSG_ERROR([Version information not found. Configuration aborted.])
+fi
+
 # FIXME this header needs to end up in the installation include directory in some form,
 # so we probably need to change its name to something that won't collide in the
 # global namespace. [goodell@ 2009-02-19]
