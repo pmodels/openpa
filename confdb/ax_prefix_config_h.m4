@@ -169,15 +169,16 @@ else
   # ANL modification: the original version of the following "echo" commands
   # caused problems under dash because its echo interprets an arg of |\1| as an
   # a request to print the character with a numeric value of 0x01, or ^A.
-  # Switching to single quoting fixes the problem for both dash and other shells.
+  # Switching to printf and single quoting fixes the problem for both dash and
+  # other shells.
   if test -f $_INP ; then
-    echo "s/^@%:@undef  *\\(@<:@m4_cr_LETTERS[]_@:>@\\)/@%:@undef $_UPP"'_\\1/' > _script
-    echo "s/^@%:@undef  *\\(@<:@m4_cr_letters@:>@\\)/@%:@undef $_LOW"'_\\1/' >> _script
-    echo "s/^@%:@def[]ine  *\\(@<:@m4_cr_LETTERS[]_@:>@@<:@_symbol@:>@*\\)\\(.*\\)/@%:@ifndef $_UPP"'_\\1 \\' >> _script
-    echo "@%:@def[]ine $_UPP"'_\\1 \\2 \\' >> _script
+    printf "s/^@%:@undef  *\\(@<:@m4_cr_LETTERS[]_@:>@\\)/@%:@undef %s"'_\\1/\n' "$_UPP" > _script
+    printf "s/^@%:@undef  *\\(@<:@m4_cr_letters@:>@\\)/@%:@undef %s"'_\\1/\n' "$_LOW" >> _script
+    printf "s/^@%:@def[]ine  *\\(@<:@m4_cr_LETTERS[]_@:>@@<:@_symbol@:>@*\\)\\(.*\\)/@%:@ifndef %s"'_\\1 \\\n' "$_UPP" >> _script
+    printf "@%:@def[]ine %s"'_\\1 \\2 \\\n' "$_UPP" >> _script
     echo "@%:@endif/" >>_script
-    echo "s/^@%:@def[]ine  *\\(@<:@m4_cr_letters@:>@@<:@_symbol@:>@*\\)\\(.*\\)/@%:@ifndef $_LOW"'_\\1 \\' >> _script
-    echo "@%:@define $_LOW"'_\\1 \\2 \\' >> _script
+    printf "s/^@%:@def[]ine  *\\(@<:@m4_cr_letters@:>@@<:@_symbol@:>@*\\)\\(.*\\)/@%:@ifndef %s"'_\\1 \\\n' "$_LOW" >> _script
+    printf "@%:@define %s"'_\\1 \\2 \\\n' "$_LOW" >> _script
     echo "@%:@endif/" >> _script
     # now executing _script on _DEF input to create _OUT output file
     echo "@%:@ifndef $_DEF"      >$tmp/pconfig.h
