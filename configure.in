@@ -45,6 +45,9 @@ dnl AC_OUTPUT time.  This way we can safely include opa_config.h in the
 dnl installation and include it in installed headers.
 AX_PREFIX_CONFIG_H([src/opa_config.h],[OPA])
 
+# Non-verbose make
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 ########################################################################
 
 # check if we're cross compiling
