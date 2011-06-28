@@ -23,10 +23,13 @@ CFLAGS=$save_cflags
 
 if test -s "$srcdir/VERSION" ; then
    . $srcdir/VERSION
-   AC_SUBST(libopa_so_version)
+   AC_SUBST([libopa_so_version])
 else
    AC_MSG_ERROR([Version information not found. Configuration aborted.])
 fi
+
+dnl force configure to be re-run if $top_srcdir/VERSION changes
+AC_SUBST([CONFIG_STATUS_DEPENDENCIES],['$(top_srcdir)/VERSION'])
 
 # FIXME this header needs to end up in the installation include directory in some form,
 # so we probably need to change its name to something that won't collide in the
