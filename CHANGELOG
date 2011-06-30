@@ -7,7 +7,7 @@ Major Changes:
       * pkg-config support
       * Emulated atomics can now be detected by the presence of an OPA_EXPLICIT_EMULATION #define in opa_config.h.
       * PPC types are now correctly aligned to 8 bytes instead of 16 bytes.
-      * many more tests for "make check"
+      * many more tests for "make check", fixed missing memory barriers in one test
 
 Individual Change Summary By Developer:
 
@@ -23,7 +23,7 @@ fortnern (3):
       * Added tests for queue, and fixed bugs in queue implementation.  Other misc cleanup.
       * Add tests for OPA_LL_int, OPA_SC_int, OPA_LL_ptr and OPA_SC_ptr (skipped test 4 from plan).
 
-goodell (14):
+goodell (16):
       * Fix const usage in OPA_load_xxx
       * Change PPC type sizes back to 8-bytes.
       * Add pkg-config support.
@@ -38,6 +38,8 @@ goodell (14):
       * use "silent rules" by default, like other MPICH2 projects
       * ensure that config.status has a dependency on the VERSION file
       * make the age=0 field explicit in the VERSION file
+      * update CHANGELOG, etc. for the upcoming 1.0.3 release
+      * add missing memory barriers to test_primitive.c's stack tests
 
 jayesh (1):
       * Fixing the type casts of atomic func params for 64-bit builds on windows
