@@ -220,6 +220,8 @@ do {                                                                      \
                                                                           \
     OPA_SHM_SET_REL_NULL((elt_ptr)->elt_hdr_field.next);                  \
                                                                           \
+    OPA_write_barrier();                                                  \
+                                                                          \
     r_prev = OPA_Shm_swap_rel(&((qhead_ptr)->tail), r_elt);               \
                                                                           \
     if (OPA_SHM_IS_REL_NULL(r_prev)) {                                    \
