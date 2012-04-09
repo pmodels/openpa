@@ -279,6 +279,7 @@ do {                                                                          \
         }                                                                     \
     }                                                                         \
     OPA_SHM_SET_REL_NULL(_e->elt_hdr_field.next);                             \
+    OPA_read_barrier();                                                       \
     elt_ptr = _e;                                                             \
 } while (0)
 
