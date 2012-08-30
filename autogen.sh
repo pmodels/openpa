@@ -6,7 +6,7 @@ else
     autoreconf=${AUTORECONF:-autoreconf}
 fi
 
-$autoreconf ${autoreconf_args:-"-vif"}
+$autoreconf ${autoreconf_args:-"-vif"} || exit 1
 
 # fix depcomp to support pgcc correctly
 if grep "pgcc)" confdb/depcomp 2>&1 >/dev/null ; then :
