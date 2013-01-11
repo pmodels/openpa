@@ -1,4 +1,4 @@
-OpenPA v1.0.3
+OpenPA v1.0.4
 -------------
 
 The goal of this project is to provide an open source, highly-portable
@@ -53,6 +53,7 @@ opa_gcc_ppc.h         - GCC and IBM's XLC on PowerPC 4xx and 970 systems.
                         Macs.
 opa_gcc_sicortex.h    - GCC on SiCortex machines.  This is a MIPS 5K based
                         architecture, so it may work on similar platforms.
+opa_gcc_arm.h         - GCC on ARMv7 (and later)
 opa_nt_intrinsics.h   - Windows support.  These use compiler intrinsics
                         available in Microsoft's Visual Studio compiler.
 opa_sun_atomic_ops.h  - Solaris support.  This uses Solaris' built-in

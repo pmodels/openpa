@@ -1,4 +1,74 @@
 =============
+OpenPA v1.0.4
+=============
+Major Changes:
+      * native ARM (v7 and higher) support
+      * numerous memory barrier placement improvements in queue and test code
+      * x86 memory barrier improvements, including for Intel MIC
+      * numerous build system improvements
+
+Individual Change Summary By Developer:
+
+Dave Goodell (17):
+      * [svn-r125] fix quoting in configure macros to avoid ac-2.68 "no
+         AC_LANG_SOURCE" warnings
+      * [svn-r126] OPA build system fixes
+      * [svn-r129] fix and optimize GCC+x86/x86_64 memory barriers
+      * [svn-r130] improve AC_ARG_WITH m4 quoting
+      * [svn-r131] do not install the README
+      * [svn-r132] store-release/load-acquire functionality
+      * [svn-r133] add a "coverage" target to keep MPICH2's recursive "make
+         coverage" happy
+      * [svn-r134] support automatic dependency tracking for pgcc
+      * [svn-r137] improve opa_queue.h comments
+      * [svn-r138] add read barrier to opa_queue.h
+      * [svn-r140] build-sys: fixes for automake-1.12 compatibility
+      * [svn-r142] pkg-config: unconditionally add -lopa to Libs
+      * [svn-r147] Revert r145: "Since we now depend on automake-1.12.3
+         [...]"
+      * [svn-r149] tweak intel header includes
+      * [svn-r152] fix incorrect PPC LL/SC comment
+      * add .gitignore file
+      * bump version number to 1.0.4 for a new release
+
+Kazutomo Yoshii (1):
+      * [svn-r151] added preliminary ARM support. only tested it on panda
+         board(ARMv7) and gcc 4.6.3
+
+Neil Fortner (3):
+      * [svn-r136] Fix problem in queue that manifested in an occasional
+         infinite loop on POWER7 machines.  Added a write barrier to
+         OPA_Queue_enqueue() after the invocation of OPA_SHM_SET_REL_NULL to
+         prevent the "next" pointer from being set to NULL after the element
+         was enqueued (and possibly modified by another thread).
+      * [svn-r139] Add memory barriers to LL/SC ABA tests.  Should fix
+         occasional failure on POWER7 systems.
+      * Add more memory barriers to LL/SC ABA tests.  This should fix the
+         recent errors on POWER7.
+
+Pavan Balaji (9):
+      * [svn-r127] Some x86 processors don't seem to like sfence either.
+         Making the write barrier even more stringent by forcing it to do a
+         full barrier.
+      * [svn-r128] Forgot to update the comment when we fixed the sfence
+         problem in r127.
+      * [svn-r135] configure.in --> configure.ac to match the naming
+         convention of newer autotools.
+      * [svn-r143] Propagate autoreconf errors upstream.
+      * [svn-r144] Remove internally maintained pgcc patch since
+         automake-1.12.3 fixes this.
+      * [svn-r145] Since we now depend on automake-1.12.3, we no longer need
+         to check if AM_PROG_AR is available.
+      * [svn-r146] svn:ignore.
+      * [svn-r148] svn:ignores.
+      * [svn-r150] IBM-contributed patch: Added support for non-versioned
+         libraries
+
+William Gropp (1):
+      * [svn-r141] Added missing svn:ignore entries
+
+
+=============
 OpenPA v1.0.3
 =============
 Major Changes:
