@@ -127,7 +127,7 @@ static _opa_inline int OPA_swap_int(OPA_int_t *ptr, int val)
     return atomic_exchange_explicit(ptr, val, memory_order_relaxed);
 }
 
-/* TODO: write/read use of release/acquire might be backwards. */
+/* Dave says that read/write don't match acq/rel perfectly so we use heavy hammer. */
 #define OPA_write_barrier()      atomic_thread_fence(memory_order_acq_rel);
 #define OPA_read_barrier()       atomic_thread_fence(memory_order_acq_rel);
 #define OPA_read_write_barrier() atomic_thread_fence(memory_order_acq_rel);
