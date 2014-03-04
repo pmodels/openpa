@@ -25,6 +25,7 @@ typedef atomic_int OPA_int_t;
 #error atomic_pointer is not lock-free.
 #else
 /* TODO Is this really the right type to use here? */
+#include <stdint.h>
 typedef atomic_intptr_t OPA_ptr_t;
 #endif
 
@@ -33,7 +34,7 @@ typedef atomic_intptr_t OPA_ptr_t;
 
 static _opa_inline int OPA_load_int(_opa_const OPA_int_t *ptr)
 {
-    return (void*)atomic_load_explicit(ptr, memory_order_relaxed);
+    return atomic_load_explicit(ptr, memory_order_relaxed);
 }
 
 static _opa_inline void OPA_store_int(OPA_int_t *ptr, int val)
@@ -115,7 +116,7 @@ static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 
 static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
-    return atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
+    return atomic_compare_exchange_weak_explicit(ptr, &oldv, newv, memory_order_relaxed, memory_order_relaxed);
 }
 
 static _opa_inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
