@@ -111,11 +111,13 @@ static _opa_inline int OPA_decr_and_test_int(OPA_int_t *ptr)
 
 static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
+    /* FIXME return value */
     return atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
 }
 
 static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
+    /* FIXME return value */
     return atomic_compare_exchange_weak_explicit(ptr, &oldv, newv, memory_order_relaxed, memory_order_relaxed);
 }
 
