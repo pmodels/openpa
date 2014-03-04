@@ -33,7 +33,7 @@ typedef atomic_intptr_t OPA_ptr_t;
 
 static _opa_inline int OPA_load_int(_opa_const OPA_int_t *ptr)
 {
-    return atomic_load_explicit(ptr, memory_order_relaxed);
+    return (void*)atomic_load_explicit(ptr, memory_order_relaxed);
 }
 
 static _opa_inline void OPA_store_int(OPA_int_t *ptr, int val)
@@ -43,12 +43,12 @@ static _opa_inline void OPA_store_int(OPA_int_t *ptr, int val)
 
 static _opa_inline void *OPA_load_ptr(_opa_const OPA_ptr_t *ptr)
 {
-    return atomic_load_explicit(ptr, memory_order_relaxed);
+    return (void*)atomic_load_explicit(ptr, memory_order_relaxed);
 }
 
 static _opa_inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
 {
-    atomic_store_explicit(ptr, val, memory_order_relaxed);
+    atomic_store_explicit(ptr, (intptr_t)val, memory_order_relaxed);
 }
 
 static _opa_inline int OPA_load_acquire_int(_opa_const OPA_int_t *ptr)
@@ -63,13 +63,14 @@ static _opa_inline void OPA_store_release_int(OPA_int_t *ptr, int val)
 
 static _opa_inline void *OPA_load_acquire_ptr(_opa_const OPA_ptr_t *ptr)
 {
-    return atomic_load_explicit(ptr, memory_order_acquire);
+    return (void*)atomic_load_explicit(ptr, memory_order_acquire);
 }
 
 static _opa_inline void OPA_store_release_ptr(OPA_ptr_t *ptr, void *val)
 {
-    atomic_store_explicit(ptr, val, memory_order_release);
+    atomic_store_explicit(ptr, (intptr_t)val, memory_order_release);
 }
+
 static _opa_inline void OPA_add_int(OPA_int_t *ptr, int val)
 {
     atomic_fetch_add_explicit(ptr, val, memory_order_relaxed);
@@ -109,17 +110,17 @@ static _opa_inline int OPA_decr_and_test_int(OPA_int_t *ptr)
 
 static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
-    return atomic_compare_exchange_weak_explicit(ptr, &oldv, &newv, memory_order_relaxed);
+    return atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
 }
 
 static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
-    return atomic_compare_exchange_weak_explicit(ptr, &oldv, &newv, memory_order_relaxed);
+    return atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
 }
 
 static _opa_inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
 {
-    return atomic_exchange_explicit(ptr, val, memory_order_relaxed);
+    return (void*)atomic_exchange_explicit(ptr, (intptr_t)val, memory_order_relaxed);
 }
 
 static _opa_inline int OPA_swap_int(OPA_int_t *ptr, int val)
