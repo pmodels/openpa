@@ -111,14 +111,18 @@ static _opa_inline int OPA_decr_and_test_int(OPA_int_t *ptr)
 
 static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
 {
-    /* FIXME return value */
-    return atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
+    /* FIXME This is not safe at all but C11 does not appear to give me any other choice. */
+    void * before = atomic_load_explicit(ptr, memory_order_relaxed);
+    atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
+    return before;
 }
 
 static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
 {
-    /* FIXME return value */
-    return atomic_compare_exchange_weak_explicit(ptr, &oldv, newv, memory_order_relaxed, memory_order_relaxed);
+    /* FIXME This is not safe at all but C11 does not appear to give me any other choice. */
+    int before = atomic_load_explicit(ptr, memory_order_relaxed);
+    atomic_compare_exchange_weak_explicit(ptr, &oldv, newv, memory_order_relaxed, memory_order_relaxed);
+    return before;
 }
 
 static _opa_inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
