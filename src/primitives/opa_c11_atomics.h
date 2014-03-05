@@ -109,20 +109,18 @@ static _opa_inline int OPA_decr_and_test_int(OPA_int_t *ptr)
 
 /* Dave Goodell says weak is fine.  OpenPA does not expect strong. */
 
-static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *oldv, void *newv)
+#include <stdbool.h>
+
+static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *comparand, void *swaperand)
 {
-    /* FIXME This is not safe at all but C11 does not appear to give me any other choice. */
-    void * before = atomic_load_explicit(ptr, memory_order_relaxed);
-    atomic_compare_exchange_weak_explicit(ptr, (intptr_t*)&oldv, (intptr_t)newv, memory_order_relaxed, memory_order_relaxed);
-    return before;
+    _Bool rc = atomic_compare_exchange_strong_explicit(ptr, (intptr_t*)&comparand, (intptr_t)swaperand, memory_order_relaxed, memory_order_relaxed);
+    return (rc == false ? comparand : swaperand);
 }
 
-static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int oldv, int newv)
+static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int comparand, int swaperand)
 {
-    /* FIXME This is not safe at all but C11 does not appear to give me any other choice. */
-    int before = atomic_load_explicit(ptr, memory_order_relaxed);
-    atomic_compare_exchange_weak_explicit(ptr, &oldv, newv, memory_order_relaxed, memory_order_relaxed);
-    return before;
+    _Bool rc = atomic_compare_exchange_strong_explicit(ptr, &comparand, swaperand, memory_order_relaxed, memory_order_relaxed);
+    return (rc == false ? comparand : swaperand);
 }
 
 static _opa_inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
