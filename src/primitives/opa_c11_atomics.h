@@ -113,14 +113,14 @@ static _opa_inline int OPA_decr_and_test_int(OPA_int_t *ptr)
 
 static _opa_inline void *OPA_cas_ptr(OPA_ptr_t *ptr, void *comparand, void *swaperand)
 {
-    _Bool rc = atomic_compare_exchange_strong_explicit(ptr, (intptr_t*)&comparand, (intptr_t)swaperand, memory_order_relaxed, memory_order_relaxed);
-    return (rc == false ? comparand : swaperand);
+    atomic_compare_exchange_strong_explicit(ptr, (intptr_t*)&comparand, (intptr_t)swaperand, memory_order_relaxed, memory_order_relaxed);
+    return comparand;
 }
 
 static _opa_inline int OPA_cas_int(OPA_int_t *ptr, int comparand, int swaperand)
 {
-    _Bool rc = atomic_compare_exchange_strong_explicit(ptr, &comparand, swaperand, memory_order_relaxed, memory_order_relaxed);
-    return (rc == false ? comparand : swaperand);
+    atomic_compare_exchange_strong_explicit(ptr, &comparand, swaperand, memory_order_relaxed, memory_order_relaxed);
+    return comparand;
 }
 
 static _opa_inline void *OPA_swap_ptr(OPA_ptr_t *ptr, void *val)
