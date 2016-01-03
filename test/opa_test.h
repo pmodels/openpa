@@ -25,6 +25,9 @@
 
 /* Define the macro to use for yielding the current thread (to others) */
 #if defined(OPA_HAVE_PTHREAD_YIELD)
+#if defined(OPA_NEEDS_PTHREAD_YIELD_DECL)
+int pthread_yield(void);
+#endif /* OPA_NEEDS_PTHREAD_YIELD_DECL */
 #  define OPA_TEST_YIELD() pthread_yield()
 #elif defined(OPA_HAVE_SCHED_YIELD)
 #  include <sched.h>

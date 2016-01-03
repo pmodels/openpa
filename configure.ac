@@ -89,6 +89,9 @@ AC_CHECK_FUNCS(pthread_yield,
         [AC_CHECK_FUNCS(sched_yield)]
     )]
 )
+if test "$ac_cv_func_pthread_yield" = "yes" ; then
+   PAC_FUNC_NEEDS_DECL([#include <pthread.h>],pthread_yield)
+fi
 
 if test "$ac_cv_lib_pthread_pthread_create" = yes; then
 AC_MSG_CHECKING([if 100 threads can be run at once])
