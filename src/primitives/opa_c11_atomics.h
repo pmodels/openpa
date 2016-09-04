@@ -15,13 +15,15 @@
 #include <stdatomic.h>
 #endif
 
-#if defined(ATOMIC_INT_LOCK_FREE) && (ATOMIC_INT_LOCK_FREE < 2)
+/* Clang 3.x has a bug in stdatomic.h, wherein there is an extra _T
+ * in the following macros.  It is fixed in Clang 4.x. */
+#if !defined(ATOMIC_INT_LOCK_FREE) && !defined(ATOMIC_INT_T_LOCK_FREE)
 #error atomic_int is not lock-free.
 #else
 typedef atomic_int OPA_int_t;
 #endif
 
-#if defined(ATOMIC_POINTER_LOCK_FREE) && (ATOMIC_POINTER_LOCK_FREE < 2)
+#if !defined(ATOMIC_POINTER_LOCK_FREE) && !defined(ATOMIC_POINTER_T_LOCK_FREE)
 #error atomic_pointer is not lock-free.
 #else
 /* TODO Is this really the right type to use here? */
