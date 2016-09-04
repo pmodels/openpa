@@ -15,13 +15,13 @@
 #include <stdatomic.h>
 #endif
 
-#ifndef ATOMIC_INT_LOCK_FREE
+#if defined(ATOMIC_INT_LOCK_FREE) && (ATOMIC_INT_LOCK_FREE < 2)
 #error atomic_int is not lock-free.
 #else
 typedef atomic_int OPA_int_t;
 #endif
 
-#ifndef ATOMIC_POINTER_LOCK_FREE
+#if defined(ATOMIC_POINTER_LOCK_FREE) && (ATOMIC_POINTER_LOCK_FREE < 2)
 #error atomic_pointer is not lock-free.
 #else
 /* TODO Is this really the right type to use here? */
@@ -32,7 +32,7 @@ typedef atomic_intptr_t OPA_ptr_t;
 #define OPA_INT_T_INITIALIZER(val_) ATOMIC_VAR_INIT(val_)
 #define OPA_PTR_T_INITIALIZER(val_) ATOMIC_VAR_INIT(val_)
 
-static _opa_inline int OPA_load_int(_opa_const OPA_int_t *ptr)
+static _opa_inline int OPA_load_int(OPA_int_t *ptr)
 {
     return atomic_load_explicit(ptr, memory_order_relaxed);
 }
@@ -42,7 +42,7 @@ static _opa_inline void OPA_store_int(OPA_int_t *ptr, int val)
     atomic_store_explicit(ptr, val, memory_order_relaxed);
 }
 
-static _opa_inline void *OPA_load_ptr(_opa_const OPA_ptr_t *ptr)
+static _opa_inline void *OPA_load_ptr(OPA_ptr_t *ptr)
 {
     return (void*)atomic_load_explicit(ptr, memory_order_relaxed);
 }
@@ -52,7 +52,7 @@ static _opa_inline void OPA_store_ptr(OPA_ptr_t *ptr, void *val)
     atomic_store_explicit(ptr, (intptr_t)val, memory_order_relaxed);
 }
 
-static _opa_inline int OPA_load_acquire_int(_opa_const OPA_int_t *ptr)
+static _opa_inline int OPA_load_acquire_int(OPA_int_t *ptr)
 {
     return atomic_load_explicit(ptr, memory_order_acquire);
 }
@@ -62,7 +62,7 @@ static _opa_inline void OPA_store_release_int(OPA_int_t *ptr, int val)
     atomic_store_explicit(ptr, val, memory_order_release);
 }
 
-static _opa_inline void *OPA_load_acquire_ptr(_opa_const OPA_ptr_t *ptr)
+static _opa_inline void *OPA_load_acquire_ptr(OPA_ptr_t *ptr)
 {
     return (void*)atomic_load_explicit(ptr, memory_order_acquire);
 }
