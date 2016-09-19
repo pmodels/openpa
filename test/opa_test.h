@@ -20,6 +20,7 @@
 #include <limits.h>
 #include <time.h>
 #if defined(OPA_HAVE_PTHREAD_H)
+#  define _GNU_SOURCE
 #  include <pthread.h>
 #endif /* HAVE_PTHREAD_H */
 
