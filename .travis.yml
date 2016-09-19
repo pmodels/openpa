@@ -14,6 +14,14 @@ env:
   - OPA_CFLAGS=-std=gnu89
   - OPA_CFLAGS=-std=gnu99
   - OPA_CFLAGS=-std=gnu11
+matrix:
+  allow_failures:
+  - os: linux
+    compiler: gcc
+    env: OPA_CFLAGS=-std=c11
+  - os: linux
+    compiler: gcc
+    env: OPA_CFLAGS=-std=gnu11
 addons:
   apt:
     sources:
