@@ -1,19 +1,15 @@
-#if __STDC_VERSION__ < 201112L
-
-#warning Empty test due to lack of C11 support.
-int main(void) { return 1; }
-
-#else
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <stdatomic.h>
-
 #include <assert.h>
+
+#if __STDC_VERSION__ >= 201112L
+# include <stdbool.h>
+# include <stdatomic.h>
+#endif
 
 int main(int argc, char **argv)
 {
+#if __STDC_VERSION__ >= 201112L
     atomic_int a, b;
     int c;
 
@@ -51,8 +47,9 @@ int main(int argc, char **argv)
     assert(1 == atomic_load_explicit(&a, memory_order_relaxed));
 
     printf("success!\n");
-
+#else
+    printf("C11 not supported!\n");
+#endif
     return 0;
 }
 
-#endif
