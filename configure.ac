@@ -427,6 +427,9 @@ fi
 export libopa_so_versionflags
 AC_SUBST(libopa_so_versionflags)
 
+AC_ARG_ENABLE(embedded,
+        [AC_HELP_STRING([--enable-embedded],[Enable embedded mode])])
+AM_CONDITIONAL([EMBEDDED], [test "x${enable_embedded}" = "xyes"])
 
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile openpa.pc])
 AC_OUTPUT

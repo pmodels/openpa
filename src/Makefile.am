@@ -7,9 +7,9 @@ lib_LTLIBRARIES = libopa.la
 libopa_la_SOURCES = opa_primitives.c opa_queue.c
 libopa_la_LDFLAGS = ${libopa_so_versionflags}
 
+if !EMBEDDED
 include_HEADERS = opa_primitives.h opa_queue.h opa_util.h
 nodist_include_HEADERS = opa_config.h
-DISTCLEANFILES = opa_config.h
 
 # "nobase_" causes the primitives directory to be preserved when installed
 nobase_include_HEADERS = primitives/opa_by_lock.h                   \
@@ -26,3 +26,6 @@ nobase_include_HEADERS = primitives/opa_by_lock.h                   \
                          primitives/opa_nt_intrinsics.h             \
                          primitives/opa_sun_atomic_ops.h            \
                          primitives/opa_unsafe.h
+endif
+
+DISTCLEANFILES = opa_config.h
