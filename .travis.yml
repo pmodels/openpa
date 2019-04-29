@@ -47,11 +47,3 @@ script:
 after_failure:
 - echo "Sad panda"
 - find . -name config.log -exec cat {} ";"
-notifications:
-  email:
-    recipients:
-    - jeff.science@gmail.com
-    on_success:
-    - change
-    on_failure:
-    - always
