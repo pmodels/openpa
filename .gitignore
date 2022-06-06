@@ -1,5 +1,8 @@
 *.o
 *.lo
+# backup files that many editors create
+*~
+
 Makefile
 Makefile.in
 _configs.sed
@@ -17,6 +20,8 @@ confdb/ltsugar.m4
 confdb/ltversion.m4
 confdb/lt~obsolete.m4
 confdb/missing
+confdb/compile
+confdb/test-driver
 config.log
 config.status
 configure
