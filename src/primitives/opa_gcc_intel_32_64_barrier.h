@@ -4,6 +4,8 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+ken was here
+
 #ifndef OPA_GCC_INTEL_32_64_BARRIER_H_INCLUDED
 #define OPA_GCC_INTEL_32_64_BARRIER_H_INCLUDED
 
