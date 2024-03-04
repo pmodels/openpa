@@ -90,7 +90,7 @@ static _opa_inline void OPA_store_release_ptr(OPA_ptr_t *ptr, void *val)
 
 static _opa_inline void OPA_add_int(OPA_int_t *ptr, int val)
 {
-    __asm__ __volatile__ ("lock ; add"OPA_SS" %1,%0"
+    __asm__ __volatile__ ("lock ; add" OPA_SS " %1,%0"
                           :"=m" (ptr->v)
                           :"ir" (val), "m" (ptr->v));
     return;
@@ -98,7 +98,7 @@ static _opa_inline void OPA_add_int(OPA_int_t *ptr, int val)
 
 static _opa_inline void OPA_incr_int(OPA_int_t *ptr)
 {
-    __asm__ __volatile__ ("lock ; inc"OPA_SS" %0"
+    __asm__ __volatile__ ("lock ; inc" OPA_SS " %0"
                           :"=m" (ptr->v)
                           :"m" (ptr->v));
     return;
@@ -106,7 +106,7 @@ static _opa_inline void OPA_incr_int(OPA_int_t *ptr)
 
 static _opa_inline void OPA_decr_int(OPA_int_t *ptr)
 {
-    __asm__ __volatile__ ("lock ; dec"OPA_SS" %0"
+    __asm__ __volatile__ ("lock ; dec" OPA_SS " %0"
                           :"=m" (ptr->v)
                           :"m" (ptr->v));
     return;
@@ -116,7 +116,7 @@ static _opa_inline void OPA_decr_int(OPA_int_t *ptr)
 static _opa_inline int OPA_decr_and_test_int(OPA_int_t *ptr)
 {
     char result;
-    __asm__ __volatile__ ("lock ; dec"OPA_SS" %0; setz %1"
+    __asm__ __volatile__ ("lock ; dec" OPA_SS " %0; setz %1"
                           :"=m" (ptr->v), "=q" (result)
                           :"m" (ptr->v));
     return result;
