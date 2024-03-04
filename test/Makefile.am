@@ -3,7 +3,7 @@
 #  (C) 2008 by Argonne National Laboratory.
 #      See COPYRIGHT in top-level directory.
 
-TESTS = sanity test_primitives test_barriers test_queue
+TESTS = sanity test_primitives test_barriers test_queue test_c11
 
 check_PROGRAMS = $(TESTS)
 
@@ -15,5 +15,6 @@ sanity_SOURCES = sanity.c
 test_primitives_SOURCES = test_primitives.c opa_test.h
 test_barriers_SOURCES = test_barriers.c opa_test.h
 test_queue_SOURCES = test_queue.c opa_test.h
+test_c11_SOURCES = test_c11.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/src

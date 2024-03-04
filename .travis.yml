@@ -1,0 +1,49 @@
+sudo: false
+language: c
+os:
+- linux
+- osx
+compiler:
+- gcc
+- clang
+env:
+  matrix:
+  - OPA_CFLAGS=-std=c89
+  - OPA_CFLAGS=-std=c99
+  - OPA_CFLAGS=-std=c11
+  - OPA_CFLAGS=-std=gnu89
+  - OPA_CFLAGS=-std=gnu99
+  - OPA_CFLAGS=-std=gnu11
+matrix:
+  allow_failures:
+  - os: linux
+    compiler: gcc
+    env: OPA_CFLAGS=-std=c11
+  - os: linux
+    compiler: gcc
+    env: OPA_CFLAGS=-std=gnu11
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    # clang-3.8 comes from this
+    - llvm-toolchain-precise
+    packages:
+    - gcc-4.9
+    - gcc-5
+    - gcc-6
+    - clang-3.8
+install:
+- export WORKING_DIRECTORY=$PWD
+- mkdir -p $WORKING_DIRECTORY/deps
+- export PATH=$WORKING_DIRECTORY/deps/bin:$PATH
+- sh .travis-install-autotools.sh $WORKING_DIRECTORY/deps
+before_script:
+- ./autogen.sh
+script:
+- ./configure CFLAGS=$OPA_CFLAGS
+- make
+- make check
+after_failure:
+- echo "Sad panda"
+- find . -name config.log -exec cat {} ";"
