@@ -6,7 +6,7 @@
 
 AC_PREREQ(2.62)
 
-AC_INIT([OpenPA], [1.0.4], [https://trac.mpich.org/projects/openpa/newticket])
+AC_INIT([OpenPA], [1.0.5], [https://github.com/pmodels/openpa/issues/new])
 dnl Set the directory that contains support scripts such as install-sh and
 dnl config.guess.  It also contains autoconf macro files.
 AC_CONFIG_AUX_DIR(confdb)

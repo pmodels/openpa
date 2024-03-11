@@ -1,4 +1,4 @@
-OpenPA v1.0.4
+OpenPA v1.0.5
 -------------
 
 The goal of this project is to provide an open source, highly-portable
@@ -10,7 +10,7 @@ derived from work on the MPICH2 project.
 
 Project documentation and bug tracking can be found at:
 
-  https://trac.mpich.org/projects/openpa/
+  https://github.com/pmodels/openpa
 
 If you would like to email questions or discuss topics related to OpenPA
 you can send mail to opa-discuss@lists.mcs.anl.gov.

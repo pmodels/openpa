@@ -1,4 +1,24 @@
 =============
+OpenPA v1.0.5
+=============
+Individual Change Summary By Developer:
+
+Antonio J. Pena (2):
+      [3c3c1686] Updated trac URLs
+      [0145f0c5] Updated contact information in COPYRIGHT
+
+Ken Raffenetti (2):
+      [c639fa90] Add decl for pthread_yield, if needed.
+      [0475704d] config: Add flag for embedded mode
+
+Rémi Dehenne (1):
+      [f8a22025] Fix clang++ compilation error in C++11
+
+Yanfei Guo (1):
+      [ccfb02f3] Update ignored file list
+
+
+=============
 OpenPA v1.0.4
 =============
 Major Changes:
